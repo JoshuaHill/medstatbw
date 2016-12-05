@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<rdf:RDF
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:med="http://purl.org/net/medstats">
+	
+  <rdf:Description rdf:about="FN">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label>Formatted Name</rdfs:label>
+  </rdf:Description>
+	
+  <rdf:Description rdf:about="jahr">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label>Jahr</rdfs:label>
+  </rdf:Description>
+  
+  <rdf:Description rdf:about="diagnose_icd">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label>Diagnose ICD-10</rdfs:label>
+  </rdf:Description>
+  
+  <rdf:Description rdf:about="diagnose_text">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label>Diagnose Beschreibung</rdfs:label>
+  </rdf:Description>
+  
+  <rdf:Description rdf:about="patienten_entlassen">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label>Entlassene Patienten</rdfs:label>
+  </rdf:Description>
+  
+  <rdf:Description rdf:about="patienten_gestorben">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label>Gestorbene Patienten</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="patienten_gesamt">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label>Patienten insgesamt</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="icd_typ">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label>ICD-10 Hierarchiestufe</rdfs:label>
+  </rdf:Description>
+  
+</rdf:RDF>
