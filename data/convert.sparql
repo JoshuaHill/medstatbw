@@ -1,0 +1,21 @@
+PREFIX med: <http://purl.org/net/medstats>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+CONSTRUCT {
+	?med_stat a med:FN;
+		med:jahr ?jahr;
+		med:diagnose_icd ?diagnose_icd;
+		med:diagnose_text ?diagnose_text;
+		med:patienten_entlassen ?patienten_entlassen_int;
+		med:patienten_gestorben ?patienten_gestorben_int;
+		med:patienten_gesamt ?patienten_gesamt_int;
+		med:icd_typ ?icd_typ;
+}
+FROM <file:patienten_gesamt2.csv#delimiter=%3B;encoding=latin1>
+WHERE {
+	BIND("http://purl.org/net/medstats/" AS ?baseURI)
+	BIND(URI(CONCAT(?baseURI, "med-stat/", ?jahr, "/", ?diagnose_icd)) AS ?med_stat)
+	BIND (xsd:integer(?patienten_entlassen) AS ?patienten_entlassen_int)
+	BIND (xsd:integer(?patienten_gestorben) AS ?patienten_gestorben_int)
+	BIND (xsd:integer(?patienten_gesamt) AS ?patienten_gesamt_int)
+}
