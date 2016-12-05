@@ -39,9 +39,25 @@
     <rdfs:label>Patienten insgesamt</rdfs:label>
   </rdf:Description>
 
+  <rdf:Description rdf:about="icd_kapitel">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label>ICD-10 Kapitel</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="icd_gruppe">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label>ICD-10 Gruppe</rdfs:label>
+  </rdf:Description>
+
   <rdf:Description rdf:about="icd_typ">
     <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
-    <rdfs:label>ICD-10 Hierarchiestufe</rdfs:label>
+    <rdfs:label>ICD-10 Hierarchiestufe Typ</rdfs:label>
+    <rdfs:range rdf:resource="#ICDTYPES"/>
   </rdf:Description>
-  
+
+  <rdfs:Class rdf:about="ICDTYPES"/>
+   <bka:DISTTYPES rdf:about="Kapitel"/>
+   <bka:DISTTYPES rdf:about="Gruppe"/>
+   <bka:DISTTYPES rdf:about="Klasse"/>
+   
 </rdf:RDF>
