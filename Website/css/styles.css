@@ -1,3 +1,11 @@
 .submenuGroups {
 	padding-left: 25%;
 }
+
+.bar {
+  fill: steelblue;
+}
+
+.axis path {
+  display: none;
+}

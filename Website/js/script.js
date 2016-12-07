@@ -11,6 +11,7 @@ overviewKeys.push("Patienten gesamt");
 function getDataForOverview() {
 
 	overviewData = [];
+	overviewDataSVG = [];
 
 	const queryString = "http://localhost:3030/medstats_new/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fjahr+%3Fpe+%3Fpt+%3Fpg%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%3Fjahr+.%0A++%3Fx+med%3Adiagnose_icd+%22INSGESAMT%22+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg%0A%7D";
 
@@ -37,12 +38,15 @@ function getDataForOverview() {
 						pg = pgval;
 					}
 				});
-
+				overviewDataSVG.push({jahr: jahr, patienten_entlassen: pe, patienten_gestorben: pt});
 				overviewData.push({jahr: jahr, patienten_entlassen: pe, patienten_gestorben: pt, patienten_gesamt: pg});
 			})
 		});
-		
 		overviewDataGlobal = overviewData;
+
+		fillTable(overviewKeys, overviewDataGlobal);
+		createStackedBarChart(overviewDataSVG);
+		
 		
 	});
 }
@@ -74,7 +78,6 @@ function getDataForMenu(typ, icd_kapitel, icd_gruppe) {
 			})
 		});
 		setMenu(menuData);
-		fillTable(overviewKeys, overviewDataGlobal);
 		menuDataGlobal = menuData;
 	});
 }
@@ -140,6 +143,18 @@ function fillTable(head,data) {
 	}	
 }
 
+function setKapitel(kapitel) {
+	document.getElementById('header-kapitel').innerHTML = kapitel;
+}
+
+function setGruppe(gruppe) {
+	document.getElementById('header-gruppe').innerHTML = gruppe;
+}
+
+function setKlasse(klasse) {
+	document.getElementById('header-klasse').innerHTML = klasse;
+}
+
 
 // Clickhandler for dynamically added menu items
 $('#sideNav').on('click', 'li', function(event) {
@@ -156,10 +171,105 @@ $('#sideNav').on('mouseover', 'li', function(event) {
 	$('[data-toggle="tooltip"]').tooltip(); 
 });
 
+/**
+* d3 functions
+*/
+// stacked bar chart
+function createStackedBarChart(jsonObj) {
+
+	var svg = d3.select("svg"),
+    margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = +svg.attr("width") - margin.left - margin.right,
+    height = +svg.attr("height") - margin.top - margin.bottom,
+    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+	var x = d3.scaleBand()
+	    .rangeRound([0, width])
+	    .padding(0.1)
+	    .align(0.1);
+
+	var y = d3.scaleLinear()
+    	.rangeRound([height, 0]);
+
+	var z = d3.scaleOrdinal()
+	    .range(["#98abc5", "#8a89a6"]);
+
+	var stack = d3.stack();
+
+
+	var data = jsonObj;
+	console.log(data[0].jahr);
+	z.domain(d3.keys(data[0]).filter(function(key) { return key !== "jahr"; }));
+
+	data.forEach(function(d) {
+	    var y0 = 0;
+	    d.jahre = z.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]}; });
+	    d.total = d.jahre[d.jahre.length - 1].y1;
+  	});
+
+  	// data.sort(function(a, b) { return b.total - a.total; });
+
+	x.domain(data.map(function(d) { return d.jahr; }));
+	y.domain([0, d3.max(data, function(d) { return d.total; })]);
+
+  	g.selectAll(".serie")
+    	.data(stack.keys(["patienten_entlassen", "patienten_gestorben"])(data))
+    	.enter().append("g")
+      	.attr("class", "serie")
+      	.attr("fill", function(d) { return z(d.key); })
+    	.selectAll("rect")
+	    .data(function(d) { return d; })
+	    .enter().append("rect")
+	    .attr("x", function(d) { return x(d.data.jahr); })
+	    .attr("y", function(d) { return y(d[1]); })
+	    .attr("height", function(d) { return y(d[0]) - y(d[1]); })
+	    .attr("width", x.bandwidth());
+
+	g.append("g")
+	    .attr("class", "axis axis--x")
+	    .attr("transform", "translate(0," + height + ")")
+	    .call(d3.axisBottom(x));
+
+	g.append("g")
+	    .attr("class", "axis axis--y")
+	    .call(d3.axisLeft(y).ticks(10, "s"))
+	    .append("text")
+	    .attr("x", 2)
+	    .attr("y", y(y.ticks(10).pop()))
+	    .attr("dy", "0.35em")
+	    .attr("text-anchor", "start")
+	    .attr("fill", "#000")
+	    .text("Patienten");
+
+  	var legend = g.selectAll(".legend")
+    	.data(data.slice(2,4))
+    	.enter().append("g")
+        .attr("class", "legend")
+        .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; })
+        .style("font", "10px sans-serif");
+
+	legend.append("rect")
+	    .attr("x", width - 18)
+	    .attr("width", 18)
+	    .attr("height", 18)
+	    .attr("fill", z);
+
+	legend.append("text")
+	    .attr("x", width - 24)
+	    .attr("y", 9)
+	    .attr("dy", ".35em")
+	    .attr("text-anchor", "end")
+	    .text(function(d) { return d; });
+
+}
+
 // Startup 
 $(document).ready(function() {
 	getDataForMenu("Kapitel", 0, 0);
 	getDataForOverview();
+	setKapitel("Alle Krankheiten");
+	setGruppe("");
+	setKlasse("");
 });
 
 
