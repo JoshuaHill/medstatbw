@@ -1,4 +1,6 @@
-// Daten für das Menü erhalten
+var menuDataGlobal;
+
+// Get Data for Sidebar menu
 function getDataForMenu(typ, icd_kapitel, icd_gruppe) {
 	
 	var menuData = [];
@@ -21,18 +23,15 @@ function getDataForMenu(typ, icd_kapitel, icd_gruppe) {
 					}
 				});
 
-				console.log("DI: " + di);
-				console.log("DT: " + dt);
 				menuData.push({icd_code: di, text: dt});
-				console.log("array len: " + menuData.length);
 			})
 		});
-		console.log("FINALFUCK: " + menuData.length);
 		setMenu(menuData);
+		menuDataGlobal = menuData;
 	});
 }
 
-// Menü laden
+// load Sidebar menu
 function setMenu(menuData) {
 	document.getElementById('sideNav').innerHTML = "";
 	console.log("set Menu initialized");
@@ -41,9 +40,15 @@ function setMenu(menuData) {
 		console.log(menuData.icd_code);
 
 		var myLi = document.createElement('li');
+		// myLi.setAttribute('data-toggle', 'tooltip');
+		// myLi.setAttribute('data-placement', 'right');
+		// myLi.setAttribute('title', menuData[i].text);
 
 		var myLiA = document.createElement('a');
-		myLiA.setAttribute('href','link');
+		myLiA.setAttribute('href','#');
+		myLiA.setAttribute('data-toggle', 'tooltip');
+		myLiA.setAttribute('data-placement', 'right');
+		myLiA.setAttribute('title', menuData[i].text);
 
 		var icd_code = document.createTextNode(menuData[i].icd_code);
 		var text = document.createTextNode(menuData[i].text);
@@ -58,6 +63,22 @@ function setMenu(menuData) {
 		document.getElementById('sideNav').appendChild(myLi);
 	}
 }
+
+
+// Clickhandler for dynamically added menu items
+$('#sideNav').on('click', 'li', function(event) {
+	event.preventDefault();
+
+	for(let i = 0, len = menuDataGlobal.length; i < len; i++) {
+		if(menuDataGlobal[i].icd_code === $(this).text())
+			console.log("Index " + i + ": " + menuDataGlobal[i].text);
+	}
+});
+
+// Tooltips for dynamically added menu items
+$('#sideNav').on('mouseover', 'li', function(event) {
+	$('[data-toggle="tooltip"]').tooltip(); 
+});
 
 // Startup 
 getDataForMenu("Kapitel", 0, 0);
