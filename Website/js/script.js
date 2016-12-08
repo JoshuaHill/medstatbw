@@ -1,19 +1,128 @@
 var menuDataGlobal;
-var overviewDataGlobal;
 
-var overviewKeys = [];
-overviewKeys.push("Jahr");
-overviewKeys.push("Patienten entlassen");
-overviewKeys.push("patienten gestorben");
-overviewKeys.push("Patienten gesamt");
+var overviewKeysJahre = [];
+overviewKeysJahre.push("Jahr");
+overviewKeysJahre.push("Patienten entlassen");
+overviewKeysJahre.push("Patienten gestorben");
+overviewKeysJahre.push("Patienten gesamt");
 
-// Get Data for Overview
+var overviewKeysJahr = [];
+overviewKeysJahr.push("ICD-10");
+overviewKeysJahr.push("Name");
+overviewKeysJahr.push("Patienten entlassen");
+overviewKeysJahr.push("Patienten gestorben");
+overviewKeysJahr.push("Patienten gesamt");
+
+
+function getCredentialsByIcd(jahr, icd_code, followup) {
+
+	var credentials;
+
+	var queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Ftyp+%3Fkap+%3Fgru%0A%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Adiagnose_icd+%22" + icd_code +"%22+.%0A++%3Fx+med%3Aicd_typ+%3Ftyp+.%0A++%3Fx+med%3Aicd_kapitel+%3Fkap+.%0A++%3Fx+med%3Aicd_gruppe+%3Fgru+.%0A%7D";
+
+	$.getJSON(queryString, function (data) {
+		$.each(data.results, function (key, val) {
+			$.each(val, function (m, n) {
+				$.each(n.typ, function (typkey, typval) {
+					if (typkey.localeCompare('value') == 0) {
+						console.log(typval);
+						typ = typval;
+					}
+				});
+				$.each(n.kap, function (kapkey, kapval) {
+					if (kapkey.localeCompare('value') == 0) {
+						kap = kapval;
+					}
+				});
+				$.each(n.gru, function (grukey, gruval) {
+					if (grukey.localeCompare('value') == 0) {
+						gru = gruval;
+					}
+				});
+			
+				credentials = ({jahr: jahr, icd_code: icd_code, typ: typ, kapitel: kap, gruppe: gru});
+				
+			})
+		});
+
+		console.log("Jahr: " + credentials.jahr);
+		console.log("Typ: " + credentials.typ);
+		console.log("Gruppe: " + credentials.gruppe);
+		console.log("Kapitel: " + credentials.kapitel);
+		
+		
+		if(followup == 0) {
+			getDataByYear(credentials.kapitel, credentials.gruppe, credentials.typ, credentials.jahr);
+		} else {
+			console.log("Something went wrong");
+		}
+		
+
+	});
+	
+}
+
+function getDataByYear(kapitel, gruppe, typ, jahr) {
+	
+	var yearData = [];
+
+	var queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Aicd_kapitel+" + kapitel +"+.%0A++%3Fx+med%3Aicd_gruppe+" + gruppe +"+.%0A++%3Fx+med%3Aicd_typ+%22" + typ +"%22+.%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
+
+	console.log(queryString);
+
+	$.getJSON(queryString, function (data) {
+		console.log("Step1");
+		$.each(data.results, function (key, val) {
+			console.log("Step2");
+			$.each(val, function (m, n) {
+				$.each(n.dia_icd, function (dia_icdkey, dia_icdval) {
+					if (dia_icdkey.localeCompare('value') == 0) {
+						dia_icd = dia_icdval;
+						console.log("DIA_ICD: " + dia_icd);
+					}
+				});
+				$.each(n.dia_text, function (dia_textkey, dia_textval) {
+					if (dia_textkey.localeCompare('value') == 0) {
+						dia_text = dia_textval;
+						console.log("DIA_TEXT " + dia_text);
+					}
+				});
+				$.each(n.pe, function (pekey, peval) {
+					if (pekey.localeCompare('value') == 0) {
+						pe = peval;
+						console.log("PE: " + pe);
+					}
+				});
+				$.each(n.pt, function (ptkey, ptval) {
+					if (ptkey.localeCompare('value') == 0) {
+						pt = ptval;
+						console.log("PT: " + pt);
+					}
+				});
+				$.each(n.pg, function (pgkey, pgval) {
+					if (pgkey.localeCompare('value') == 0) {
+						pg = pgval;
+						console.log("PG: " + pg);
+					}
+				});
+				yearData.push({icd_code: dia_icd, icd_text: dia_text, patienten_entlassen: pe, patienten_gestorben: pt, patienten_gesamt: pg});
+			})
+		});
+		fillTable(overviewKeysJahr, yearData);
+	});
+	// createStackedBarChart(overviewDataSVG);
+
+}
+
+
+
+// Get Data for Default Overview
 function getDataForOverview() {
 
 	overviewData = [];
 	overviewDataSVG = [];
 
-	const queryString = "http://localhost:3030/medstats_new/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fjahr+%3Fpe+%3Fpt+%3Fpg%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%3Fjahr+.%0A++%3Fx+med%3Adiagnose_icd+%22INSGESAMT%22+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg%0A%7D";
+	const queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fjahr+%3Fpe+%3Fpt+%3Fpg%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%3Fjahr+.%0A++%3Fx+med%3Adiagnose_icd+%22INSGESAMT%22+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg%0A%7D";
 
 	$.getJSON(queryString, function (data) {
 		$.each(data.results, function (key, val) {
@@ -42,11 +151,9 @@ function getDataForOverview() {
 				overviewData.push({jahr: jahr, patienten_entlassen: pe, patienten_gestorben: pt, patienten_gesamt: pg});
 			})
 		});
-		overviewDataGlobal = overviewData;
-
-		fillTable(overviewKeys, overviewDataGlobal);
-		createStackedBarChart(overviewDataSVG);
 		
+		fillTable(overviewKeysJahre, overviewData);
+		createStackedBarChart(overviewDataSVG);		
 		
 	});
 }
@@ -56,7 +163,7 @@ function getDataForMenu(typ, icd_kapitel, icd_gruppe) {
 	
 	var menuData = [];
 
-	const queryString = "http://localhost:3030/medstats_new/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E+SELECT+distinct+%3Fdi+%3Fdt+WHERE+%7B%3Fx+med%3Ajahr+%222000%22+.+%3Fx+med%3Adiagnose_icd+%3Fdi+.+%3Fx+med%3Adiagnose_text+%3Fdt+.+%3Fx+med%3Aicd_typ+%22" + typ + "%22+.%7D";
+	const queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E+SELECT+distinct+%3Fdi+%3Fdt+WHERE+%7B%3Fx+med%3Ajahr+%222000%22+.+%3Fx+med%3Adiagnose_icd+%3Fdi+.+%3Fx+med%3Adiagnose_text+%3Fdt+.+%3Fx+med%3Aicd_typ+%22" + typ + "%22+.%7D";
 
 	console.log(queryString);
 
@@ -116,6 +223,13 @@ function setMenu(menuData) {
 }
 
 function fillTable(head,data) {
+
+
+		document.getElementById('stats-table-head').innerHTML = "";
+		document.getElementById('stats-table-body').innerHTML = "";
+	
+	
+
 	var myTrHead = document.createElement('tr');
 
 	for (let i = 0, len = head.length; i < len; i++) {
@@ -127,12 +241,21 @@ function fillTable(head,data) {
 
 	document.getElementById('stats-table-head').appendChild(myTrHead);
 
+	console.log("D.len: " + data.length);
+
 	for (let i = 0, len = data.length; i < len; i++) {
 		var myTrBody = document.createElement('tr');
 		var obj = data[i];
 		for (var key in obj) {
 			var value = obj[key];
-			value.toString();
+			console.log("VAL " + value);
+			console.log("KEY " + key);
+			if(key.localeCompare('jahr') == 0) {
+				value.toString();
+			} else {
+				value = humanizeNumber(value);
+			}
+			
 			var text = document.createTextNode(value);
 			var myTd = document.createElement('td');
 			myTd.appendChild(text);
@@ -160,10 +283,20 @@ $('#sideNav').on('mouseover', 'li', function(event) {
 
 // Clickhandler for bars of stacked bar chart
 $('#stacked-barchart').on('click', 'g > g.serie > rect', function(event) {
-	event.preventDefault();
-		// TODO Add Links
-		console.log("Hallo");
-		alert("Hallo");
+	event.preventDefault();	
+	console.log(this);
+	var jahr = (this).getAttribute('jahr');
+	setSectionHeader(jahr);
+	var icd = document.getElementById('header-kapitel').innerHTML;
+	if(icd.localeCompare("Alle Krankheiten") == 0) {
+		icd = "INSGESAMT";
+	}
+
+	console.log("Jahr early: " + jahr);
+	console.log("ICD early: "  + icd);
+
+	getCredentialsByIcd(jahr, icd, 0);
+
 });
 
 // Tooltips for bars of stacked bar charts
@@ -222,7 +355,8 @@ function createStackedBarChart(jsonObj) {
       	.attr("fill", function(d) { return z(d.key); })
     	.selectAll("rect")
 	    .data(function(d) { return d; })
-	    .enter().append("rect")	    
+	    .enter().append("rect")	 
+	    .attr('jahr', function(d) {return d.data.jahr;})   
 	    .attr('data-togle', 'tooltip')
 	    .attr('data-placement', 'right')
 	    .attr('title', function(d) {
@@ -230,7 +364,10 @@ function createStackedBarChart(jsonObj) {
 	    	var patienten_entlassen = parseFloat(d.data.patienten_entlassen);
 	    	var gestorbenProzent = (patienten_gestorben / (patienten_gestorben + patienten_entlassen)) * 100; 
 	    	gestorbenProzent = gestorbenProzent.toFixed(4);
-	    	var text = "Entlassen: " + d.data.patienten_entlassen + "<br />Gestorben: " + d.data.patienten_gestorben + "<br />Gestorben %: " + gestorbenProzent; 
+	    	gestorbenProzent = germanizeDecimal(gestorbenProzent);
+	    	var gestorben = humanizeNumber(patienten_gestorben);
+	    	var entlassen = humanizeNumber(patienten_entlassen);
+		  	var text = "Entlassen: " + entlassen + "<br />Gestorben: " + gestorben + "<br />Gestorben %: " + gestorbenProzent; 
 	    	return text;
 	    	})
 	    .attr("x", function(d) { return x(d.data.jahr); })
@@ -298,6 +435,22 @@ function setAllHeaders(kapitel, gruppe, klasse, header) {
 	setGruppe(gruppe);
 	setKlasse(klasse);
 	setSectionHeader(header);
+}
+
+function humanizeNumber(n) {
+  n = n.toString();
+  while (true) {
+    var n2 = n.replace(/(\d)(\d{3})($|,|\.)/g, '$1.$2$3');
+    if (n == n2) break;
+    n = n2;
+  }
+  return n;
+}
+
+function germanizeDecimal(n) {
+	n = n.toString();
+	var n2 = n.replace('.', ',');
+	return n2;
 }
 
 // Startup 
