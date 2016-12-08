@@ -9,3 +9,7 @@
 .axis path {
   display: none;
 }
+
+.tooltip-inner {
+    white-space:pre-wrap;
+}

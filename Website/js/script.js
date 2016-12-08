@@ -143,19 +143,6 @@ function fillTable(head,data) {
 	}	
 }
 
-function setKapitel(kapitel) {
-	document.getElementById('header-kapitel').innerHTML = kapitel;
-}
-
-function setGruppe(gruppe) {
-	document.getElementById('header-gruppe').innerHTML = gruppe;
-}
-
-function setKlasse(klasse) {
-	document.getElementById('header-klasse').innerHTML = klasse;
-}
-
-
 // Clickhandler for dynamically added menu items
 $('#sideNav').on('click', 'li', function(event) {
 	event.preventDefault();
@@ -170,6 +157,22 @@ $('#sideNav').on('click', 'li', function(event) {
 $('#sideNav').on('mouseover', 'li', function(event) {
 	$('[data-toggle="tooltip"]').tooltip(); 
 });
+
+// Clickhandler for bars of stacked bar chart
+$('#stacked-barchart').on('click', 'g > g.serie > rect', function(event) {
+	event.preventDefault();
+		// TODO Add Links
+		console.log("Hallo");
+		alert("Hallo");
+});
+
+// Tooltips for bars of stacked bar charts
+$('#stacked-barchart').on('mouseover', 'g > g.serie > rect', function(event) {
+	// Change Mousepointer
+	this.style.cursor = "pointer";
+	$(this).tooltip({container:'body', html: true});
+});
+
 
 /**
 * d3 functions
@@ -219,7 +222,17 @@ function createStackedBarChart(jsonObj) {
       	.attr("fill", function(d) { return z(d.key); })
     	.selectAll("rect")
 	    .data(function(d) { return d; })
-	    .enter().append("rect")
+	    .enter().append("rect")	    
+	    .attr('data-togle', 'tooltip')
+	    .attr('data-placement', 'right')
+	    .attr('title', function(d) {
+	    	var patienten_gestorben = parseFloat(d.data.patienten_gestorben);
+	    	var patienten_entlassen = parseFloat(d.data.patienten_entlassen);
+	    	var gestorbenProzent = (patienten_gestorben / (patienten_gestorben + patienten_entlassen)) * 100; 
+	    	gestorbenProzent = gestorbenProzent.toFixed(4);
+	    	var text = "Entlassen: " + d.data.patienten_entlassen + "<br />Gestorben: " + d.data.patienten_gestorben + "<br />Gestorben %: " + gestorbenProzent; 
+	    	return text;
+	    	})
 	    .attr("x", function(d) { return x(d.data.jahr); })
 	    .attr("y", function(d) { return y(d[1]); })
 	    .attr("height", function(d) { return y(d[0]) - y(d[1]); })
@@ -241,6 +254,7 @@ function createStackedBarChart(jsonObj) {
 	    .attr("fill", "#000")
 	    .text("Patienten");
 
+	/*
   	var legend = g.selectAll(".legend")
     	.data(data.slice(2,4))
     	.enter().append("g")
@@ -260,16 +274,37 @@ function createStackedBarChart(jsonObj) {
 	    .attr("dy", ".35em")
 	    .attr("text-anchor", "end")
 	    .text(function(d) { return d; });
+	*/
+}
 
+function setKapitel(kapitel) {
+	document.getElementById('header-kapitel').innerHTML = kapitel;
+}
+
+function setGruppe(gruppe) {
+	document.getElementById('header-gruppe').innerHTML = gruppe;
+}
+
+function setKlasse(klasse) {
+	document.getElementById('header-klasse').innerHTML = klasse;
+}
+
+function setSectionHeader(header) {
+	document.getElementById('section-header').innerHTML = header;
+}
+
+function setAllHeaders(kapitel, gruppe, klasse, header) {
+	setKapitel(kapitel);
+	setGruppe(gruppe);
+	setKlasse(klasse);
+	setSectionHeader(header);
 }
 
 // Startup 
 $(document).ready(function() {
 	getDataForMenu("Kapitel", 0, 0);
 	getDataForOverview();
-	setKapitel("Alle Krankheiten");
-	setGruppe("");
-	setKlasse("");
+	setAllHeaders("Alle Krankheiten", "", "", "Jahr 2000 - 2014");
 });
 
 
