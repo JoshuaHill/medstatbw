@@ -1,3 +1,9 @@
+/**
+*
+* GLOBAL VARIABLES
+*
+**/
+
 var menuDataGlobal;
 
 var overviewKeysJahre = [];
@@ -13,6 +19,14 @@ overviewKeysJahr.push("Patienten entlassen");
 overviewKeysJahr.push("Patienten gestorben");
 overviewKeysJahr.push("Patienten gesamt");
 
+
+
+
+/**
+*
+* DATA FUNCTIONS
+*
+**/
 
 function getCredentialsByIcd(jahr, icd_code, followup) {
 
@@ -43,13 +57,7 @@ function getCredentialsByIcd(jahr, icd_code, followup) {
 				credentials = ({jahr: jahr, icd_code: icd_code, typ: typ, kapitel: kap, gruppe: gru});
 				
 			})
-		});
-
-		console.log("Jahr: " + credentials.jahr);
-		console.log("Typ: " + credentials.typ);
-		console.log("Gruppe: " + credentials.gruppe);
-		console.log("Kapitel: " + credentials.kapitel);
-		
+		});		
 		
 		if(followup == 0) {
 			getDataByYear(credentials.kapitel, credentials.gruppe, credentials.typ, credentials.jahr);
@@ -113,9 +121,7 @@ function getDataByYear(kapitel, gruppe, typ, jahr) {
 				yearData.push({icd_code: dia_icd, icd_text: dia_text, patienten_entlassen: pe, patienten_gestorben: pt, patienten_gesamt: pg});
 			})
 		});
-		document.getElementById("stacked-barchart").innerHTML = "";
-		document.getElementById("stacked-barchart").setAttribute('width', 0);
-		document.getElementById("stacked-barchart").setAttribute('height', 0);
+		
 		fillTable(overviewKeysJahr, yearData);
 
 	});
@@ -226,6 +232,15 @@ function setMenu(menuData) {
 	}
 }
 
+
+
+
+/**
+*
+* TABLE FUNCTIONS
+*
+**/
+
 function fillTable(head,data) {
 
 	document.getElementById('stats-table-head').innerHTML = "";
@@ -263,6 +278,15 @@ function fillTable(head,data) {
 	}	
 }
 
+
+
+
+/**
+*
+* EVENT HANDLERS
+*
+**/
+
 // Clickhandler for dynamically added menu items
 $('#sideNav').on('click', 'li', function(event) {
 	event.preventDefault();
@@ -280,8 +304,11 @@ $('#sideNav').on('mouseover', 'li', function(event) {
 
 // Clickhandler for bars of stacked bar chart
 $('#stacked-barchart').on('click', 'g > g.serie > rect', function(event) {
+	// Hide tooltip to prevent it from staying after a bar is clicked
+	$(this).tooltip('hide')
+
 	event.preventDefault();	
-	console.log(this);
+
 	var jahr = (this).getAttribute('jahr');
 	setSectionHeader(jahr);
 	var icd = document.getElementById('header-kapitel').innerHTML;
@@ -289,9 +316,12 @@ $('#stacked-barchart').on('click', 'g > g.serie > rect', function(event) {
 		icd = "INSGESAMT";
 	}
 
-	console.log("Jahr early: " + jahr);
-	console.log("ICD early: "  + icd);
+	// "remove" the barcharts
+	document.getElementById("stacked-barchart").innerHTML = "";
+	document.getElementById("stacked-barchart").setAttribute('width', 0);
+	document.getElementById("stacked-barchart").setAttribute('height', 0);
 
+	// call method to load the appropriate data
 	getCredentialsByIcd(jahr, icd, 0);
 
 });
@@ -304,9 +334,14 @@ $('#stacked-barchart').on('mouseover', 'g > g.serie > rect', function(event) {
 });
 
 
+
+
 /**
+*
 * d3 functions
-*/
+*
+**/
+
 // stacked bar chart
 function createStackedBarChart(jsonObj) {
 
@@ -411,6 +446,14 @@ function createStackedBarChart(jsonObj) {
 	*/
 }
 
+
+
+/**
+*
+* HELPER FUNCTIONS
+*
+**/
+
 function setKapitel(kapitel) {
 	document.getElementById('header-kapitel').innerHTML = kapitel;
 }
@@ -449,6 +492,15 @@ function germanizeDecimal(n) {
 	var n2 = n.replace('.', ',');
 	return n2;
 }
+
+
+
+
+/**
+*
+* INIT FUNCTION
+*
+**/
 
 // Startup 
 $(document).ready(function() {
