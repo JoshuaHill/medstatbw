@@ -65,8 +65,13 @@ function getCredentialsByIcd(jahr, icd_code, followup) {
 function getDataByYear(kapitel, gruppe, typ, jahr) {
 	
 	var yearData = [];
+	var queryString;
 
-	var queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Aicd_kapitel+" + kapitel +"+.%0A++%3Fx+med%3Aicd_gruppe+" + gruppe +"+.%0A++%3Fx+med%3Aicd_typ+%22" + typ +"%22+.%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
+	if(typ.localeCompare("Insgesamt") == 0) {
+		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fkap+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Aicd_typ+%22Kapitel%22+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
+	} else {
+		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Aicd_kapitel+" + kapitel +"+.%0A++%3Fx+med%3Aicd_gruppe+" + gruppe +"+.%0A++%3Fx+med%3Aicd_typ+%22" + typ +"%22+.%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
+	}
 
 	console.log(queryString);
 
@@ -108,7 +113,11 @@ function getDataByYear(kapitel, gruppe, typ, jahr) {
 				yearData.push({icd_code: dia_icd, icd_text: dia_text, patienten_entlassen: pe, patienten_gestorben: pt, patienten_gesamt: pg});
 			})
 		});
+		document.getElementById("stacked-barchart").innerHTML = "";
+		document.getElementById("stacked-barchart").setAttribute('width', 0);
+		document.getElementById("stacked-barchart").setAttribute('height', 0);
 		fillTable(overviewKeysJahr, yearData);
+
 	});
 	// createStackedBarChart(overviewDataSVG);
 
@@ -198,9 +207,6 @@ function setMenu(menuData) {
 		console.log(menuData.icd_code);
 
 		var myLi = document.createElement('li');
-		// myLi.setAttribute('data-toggle', 'tooltip');
-		// myLi.setAttribute('data-placement', 'right');
-		// myLi.setAttribute('title', menuData[i].text);
 
 		var myLiA = document.createElement('a');
 		myLiA.setAttribute('href','#');
@@ -213,8 +219,6 @@ function setMenu(menuData) {
 		var br = document.createElement('br');
 
 		myLiA.appendChild(icd_code);
-		// myLiA.appendChild(br);
-		// myLiA.appendChild(text);
 
 		myLi.appendChild(myLiA);
 
@@ -224,12 +228,9 @@ function setMenu(menuData) {
 
 function fillTable(head,data) {
 
-
-		document.getElementById('stats-table-head').innerHTML = "";
-		document.getElementById('stats-table-body').innerHTML = "";
+	document.getElementById('stats-table-head').innerHTML = "";
+	document.getElementById('stats-table-body').innerHTML = "";
 	
-	
-
 	var myTrHead = document.createElement('tr');
 
 	for (let i = 0, len = head.length; i < len; i++) {
@@ -241,15 +242,11 @@ function fillTable(head,data) {
 
 	document.getElementById('stats-table-head').appendChild(myTrHead);
 
-	console.log("D.len: " + data.length);
-
 	for (let i = 0, len = data.length; i < len; i++) {
 		var myTrBody = document.createElement('tr');
 		var obj = data[i];
 		for (var key in obj) {
 			var value = obj[key];
-			console.log("VAL " + value);
-			console.log("KEY " + key);
 			if(key.localeCompare('jahr') == 0) {
 				value.toString();
 			} else {
@@ -457,7 +454,7 @@ function germanizeDecimal(n) {
 $(document).ready(function() {
 	getDataForMenu("Kapitel", 0, 0);
 	getDataForOverview();
-	setAllHeaders("Alle Krankheiten", "", "", "Jahr 2000 - 2014");
+	setAllHeaders("Alle Krankheiten", "", "", "2000 - 2014");
 });
 
 
