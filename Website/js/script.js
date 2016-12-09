@@ -19,6 +19,22 @@ overviewKeysJahr.push("Patienten entlassen");
 overviewKeysJahr.push("Patienten gestorben");
 overviewKeysJahr.push("Patienten gesamt");
 
+var distinctColors = [
+	"#FFFF00", "#1CE6FF", "#FF34FF", "#FF4A46", "#008941", "#006FA6", "#A30059",
+	"#FFDBE5", "#7A4900", "#0000A6", "#63FFAC", "#B79762", "#004D43", "#8FB0FF", "#997D87",
+	"#5A0007", "#809693", "#FEFFE6", "#1B4400", "#4FC601", "#3B5DFF", "#4A3B53", "#FF2F80",
+	"#61615A", "#BA0900", "#6B7900", "#00C2A0", "#FFAA92", "#FF90C9", "#B903AA", "#D16100",
+	"#DDEFFF", "#000035", "#7B4F4B", "#A1C299", "#300018", "#0AA6D8", "#013349", "#00846F",
+	"#372101", "#FFB500", "#C2FFED", "#A079BF", "#CC0744", "#C0B9B2", "#C2FF99", "#001E09",
+	"#00489C", "#6F0062", "#0CBD66", "#EEC3FF", "#456D75", "#B77B68", "#7A87A1", "#788D66",
+	"#885578", "#FAD09F", "#FF8A9A", "#D157A0", "#BEC459", "#456648", "#0086ED", "#886F4C",
+	"#34362D", "#B4A8BD", "#00A6AA", "#452C2C", "#636375", "#A3C8C9", "#FF913F", "#938A81",
+	"#575329", "#00FECF", "#B05B6F", "#8CD0FF", "#3B9700", "#04F757", "#C8A1A1", "#1E6E00",
+	"#7900D7", "#A77500", "#6367A9", "#A05837", "#6B002C", "#772600", "#D790FF", "#9B9700",
+	"#549E79", "#FFF69F", "#201625", "#72418F", "#BC23FF", "#99ADC0", "#3A2465", "#922329",
+	"#5B4534", "#FDE8DC", "#404E55", "#0089A3", "#CB7E98", "#A4E804", "#324E72", "#6A3A4C",
+];
+
 
 
 
@@ -123,7 +139,8 @@ function getDataByYear(kapitel, gruppe, typ, jahr) {
 		});
 		
 		fillTable(overviewKeysJahr, yearData);
-		createPieChart();
+		var pieData = createDataForPieChart(distinctColors, yearData);
+		createPieChart(pieData);
 	});
 	// createStackedBarChart(overviewDataSVG);
 
@@ -448,7 +465,8 @@ function createStackedBarChart(jsonObj) {
 
 
 // create a labeled pie chart bar chart
-function createPieChart() {
+function createPieChart(jsonObj) {
+
 	var pie = new d3pie("pieChart", {
 	"header": {
 		"title": {
@@ -474,150 +492,11 @@ function createPieChart() {
 		"canvasWidth": 620,
 		"pieOuterRadius": "80%"
 	},
+
+
 	"data": {
 		"sortOrder": "value-desc",
-		"content": [
-			{
-				"label": "JavaScript",
-				"value": 264131,
-				"color": "#2484c1"
-			},
-			{
-				"label": "Ruby",
-				"value": 218812,
-				"color": "#0c6197"
-			},
-			{
-				"label": "Java",
-				"value": 157618,
-				"color": "#4daa4b"
-			},
-			{
-				"label": "PHP",
-				"value": 114384,
-				"color": "#90c469"
-			},
-			{
-				"label": "Python",
-				"value": 95002,
-				"color": "#daca61"
-			},
-			{
-				"label": "C+",
-				"value": 78327,
-				"color": "#e4a14b"
-			},
-			{
-				"label": "C",
-				"value": 67706,
-				"color": "#e98125"
-			},
-			{
-				"label": "Objective-C",
-				"value": 36344,
-				"color": "#cb2121"
-			},
-			{
-				"label": "Shell",
-				"value": 28561,
-				"color": "#830909"
-			},
-			{
-				"label": "Cobol",
-				"value": 24131,
-				"color": "#923e99"
-			},
-			{
-				"label": "C#",
-				"value": 100,
-				"color": "#ae83d5"
-			},
-			{
-				"label": "Coldfusion",
-				"value": 68,
-				"color": "#bf273e"
-			},
-			{
-				"label": "Fortran",
-				"value": 218812,
-				"color": "#ce2aeb"
-			},
-			{
-				"label": "Coffeescript",
-				"value": 157618,
-				"color": "#bca44a"
-			},
-			{
-				"label": "Node",
-				"value": 114384,
-				"color": "#618d1b"
-			},
-			{
-				"label": "Basic",
-				"value": 95002,
-				"color": "#1ee67b"
-			},
-			{
-				"label": "Cola",
-				"value": 36344,
-				"color": "#b0ec44"
-			},
-			{
-				"label": "Perl",
-				"value": 32170,
-				"color": "#a4a0c9"
-			},
-			{
-				"label": "Dart",
-				"value": 28561,
-				"color": "#322849"
-			},
-			{
-				"label": "Go",
-				"value": 264131,
-				"color": "#86f71a"
-			},
-			{
-				"label": "Groovy",
-				"value": 218812,
-				"color": "#d1c87f"
-			},
-			{
-				"label": "Processing",
-				"value": 157618,
-				"color": "#7d9058"
-			},
-			{
-				"label": "Smalltalk",
-				"value": 114384,
-				"color": "#44b9b0"
-			},
-			{
-				"label": "Scala",
-				"value": 95002,
-				"color": "#7c37c0"
-			},
-			{
-				"label": "Visual Basic",
-				"value": 78327,
-				"color": "#cc9fb1"
-			},
-			{
-				"label": "Scheme",
-				"value": 67706,
-				"color": "#e65414"
-			},
-			{
-				"label": "Rust",
-				"value": 36344,
-				"color": "#8b6834"
-			},
-			{
-				"label": "FoxPro",
-				"value": 32170,
-				"color": "#248838"
-			}
-		]
+		"content": jsonObj
 	},
 	"labels": {
 		"outer": {
@@ -693,6 +572,7 @@ function setAllHeaders(kapitel, gruppe, klasse, header) {
 	setSectionHeader(header);
 }
 
+// Function to add thousands seperators to large numbers
 function humanizeNumber(n) {
   n = n.toString();
   while (true) {
@@ -703,10 +583,25 @@ function humanizeNumber(n) {
   return n;
 }
 
+// Function to replace . with ,
 function germanizeDecimal(n) {
 	n = n.toString();
 	var n2 = n.replace('.', ',');
 	return n2;
+}
+
+function createDataForPieChart(colorData, dataObj ){
+
+	var pieData = [];
+
+	for (let i = 0, len = dataObj.length; i < len ;i++) {
+
+		pieData.push({label: dataObj[i].icd_code, value: parseInt(dataObj[i].patienten_gesamt), color: colorData[i]});
+
+	}
+
+	return pieData;
+
 }
 
 
@@ -720,6 +615,7 @@ function germanizeDecimal(n) {
 
 // Startup 
 $(document).ready(function() {
+	console.log(distinctColors);
 	getDataForMenu("Kapitel", 0, 0);
 	getDataForOverview();
 	setAllHeaders("Alle Krankheiten", "", "", "2000 - 2014");
