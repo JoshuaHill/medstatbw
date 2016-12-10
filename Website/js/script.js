@@ -20,9 +20,9 @@ overviewKeysJahr.push("Patienten gestorben");
 overviewKeysJahr.push("Patienten gesamt");
 
 var distinctColors = [
-	"#FFFF00", "#1CE6FF", "#FF34FF", "#FF4A46", "#008941", "#006FA6", "#A30059",
+	"#1CE6FF", "#FF4A46", "#008941", "#006FA6", "#A30059",
 	"#FFDBE5", "#7A4900", "#0000A6", "#63FFAC", "#B79762", "#004D43", "#8FB0FF", "#997D87",
-	"#5A0007", "#809693", "#FEFFE6", "#1B4400", "#4FC601", "#3B5DFF", "#4A3B53", "#FF2F80",
+	"#5A0007", "#809693", "#1B4400", "#4FC601", "#3B5DFF", "#4A3B53", "#FF2F80",
 	"#61615A", "#BA0900", "#6B7900", "#00C2A0", "#FFAA92", "#FF90C9", "#B903AA", "#D16100",
 	"#DDEFFF", "#000035", "#7B4F4B", "#A1C299", "#300018", "#0AA6D8", "#013349", "#00846F",
 	"#372101", "#FFB500", "#C2FFED", "#A079BF", "#CC0744", "#C0B9B2", "#C2FF99", "#001E09",
@@ -140,7 +140,7 @@ function getDataByYear(kapitel, gruppe, typ, jahr) {
 		
 		fillTable(overviewKeysJahr, yearData);
 		var pieData = createDataForPieChart(distinctColors, yearData);
-		createPieChart(pieData);
+		createPieChart(pieData, yearData);
 	});
 	// createStackedBarChart(overviewDataSVG);
 
@@ -350,6 +350,12 @@ $('#stacked-barchart').on('mouseover', 'g > g.serie > rect', function(event) {
 	$(this).tooltip({container:'body', html: true});
 });
 
+// Tooltips for pieChart slices
+$('#piechart').on('mouseover', 'svg > g.p0_pieChart > g', function (event) {
+	// Change Mousepointer
+	this.style.cursor = "pointer";
+	$(this).tooltip({container:'body', html: true});
+});
 
 
 
@@ -465,7 +471,7 @@ function createStackedBarChart(jsonObj) {
 
 
 // create a labeled pie chart bar chart
-function createPieChart(jsonObj) {
+function createPieChart(pieData, yearData) {
 
 	var pie = new d3pie("pieChart", {
 	"header": {
@@ -496,7 +502,7 @@ function createPieChart(jsonObj) {
 
 	"data": {
 		"sortOrder": "value-desc",
-		"content": jsonObj
+		"content": pieData
 	},
 	"labels": {
 		"outer": {
@@ -536,7 +542,10 @@ function createPieChart(jsonObj) {
 		}
 	},
 	"callbacks": {}
-});
+	});
+
+	addPieTooltips(pieData, yearData);
+
 }
 
 
@@ -590,19 +599,26 @@ function germanizeDecimal(n) {
 	return n2;
 }
 
+// Function to generate the necessary Data to create pie charts
 function createDataForPieChart(colorData, dataObj ){
-
 	var pieData = [];
 
 	for (let i = 0, len = dataObj.length; i < len ;i++) {
-
 		pieData.push({label: dataObj[i].icd_code, value: parseInt(dataObj[i].patienten_gesamt), color: colorData[i]});
-
 	}
 
 	return pieData;
-
 }
+
+// Function to add Tooltip data to pie chart
+function addPieTooltips(pieData, yearDataGlobal) {
+	for(let i = 0, len = pieData.length; i < len; i++) {
+		var path = document.getElementById('p0_segment' + i);
+		path.setAttribute('')
+	}
+}
+
+
 
 
 
