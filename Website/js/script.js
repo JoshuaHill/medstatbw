@@ -5,6 +5,8 @@
 **/
 
 var menuDataGlobal;
+var pieChartDetailsGlobal;
+var pieDataGlobal;
 
 var overviewKeysJahre = [];
 overviewKeysJahre.push("Jahr");
@@ -77,6 +79,8 @@ function getCredentialsByIcd(jahr, icd_code, followup) {
 		
 		if(followup == 0) {
 			getDataByYear(credentials.kapitel, credentials.gruppe, credentials.typ, credentials.jahr);
+		} else if (followup == 1) {
+
 		} else {
 			console.log("Something went wrong");
 		}
@@ -91,8 +95,16 @@ function getDataByYear(kapitel, gruppe, typ, jahr) {
 	var yearData = [];
 	var queryString;
 
+	// Alle Kapitel
 	if(typ.localeCompare("Insgesamt") == 0) {
 		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fkap+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Aicd_typ+%22Kapitel%22+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
+	// Alle Gruppen zu Kapitel
+	} else if(typ.localeCompare("Kapitel") == 0) {
+		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fgru+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Aicd_typ+%22Gruppe%22+.%0A++%3Fx+med%3Aicd_kapitel+" + kapitel + "+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
+	// Alle Klassen zu Gruppe
+	} else if(typ.localeCompare("Gruppe") == 0){
+		queryString = "";
+	// Nur die Klasse selbst (Query überhaupt notwendig?!?!)
 	} else {
 		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Aicd_kapitel+" + kapitel +"+.%0A++%3Fx+med%3Aicd_gruppe+" + gruppe +"+.%0A++%3Fx+med%3Aicd_typ+%22" + typ +"%22+.%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
 	}
@@ -100,9 +112,7 @@ function getDataByYear(kapitel, gruppe, typ, jahr) {
 	console.log(queryString);
 
 	$.getJSON(queryString, function (data) {
-		console.log("Step1");
 		$.each(data.results, function (key, val) {
-			console.log("Step2");
 			$.each(val, function (m, n) {
 				$.each(n.dia_icd, function (dia_icdkey, dia_icdval) {
 					if (dia_icdkey.localeCompare('value') == 0) {
@@ -137,7 +147,8 @@ function getDataByYear(kapitel, gruppe, typ, jahr) {
 				yearData.push({icd_code: dia_icd, icd_text: dia_text, patienten_entlassen: pe, patienten_gestorben: pt, patienten_gesamt: pg});
 			})
 		});
-		
+
+		pieChartDetailsGlobal = yearData;
 		fillTable(overviewKeysJahr, yearData);
 		var pieData = createDataForPieChart(distinctColors, yearData);
 		createPieChart(pieData, yearData);
@@ -350,11 +361,49 @@ $('#stacked-barchart').on('mouseover', 'g > g.serie > rect', function(event) {
 	$(this).tooltip({container:'body', html: true});
 });
 
-// Tooltips for pieChart slices
-$('#piechart').on('mouseover', 'svg > g.p0_pieChart > g', function (event) {
+// Show Details for pieChart slices
+$('#pieChart').on('mouseover', 'svg > g:nth-of-type(2) > g > path', function (event) {
 	// Change Mousepointer
 	this.style.cursor = "pointer";
-	$(this).tooltip({container:'body', html: true});
+	// console.log(this);
+	console.log(this.getAttribute('fill'));
+	for(let i = 0, len = pieDataGlobal.length; i < len; i++) {
+		if(this.getAttribute('fill').localeCompare(pieDataGlobal[i].color) == 0) {
+			document.getElementById('icd-number').innerHTML = pieChartDetailsGlobal[i].icd_code;
+			document.getElementById('icd-description').innerHTML = pieChartDetailsGlobal[i].icd_text;
+			document.getElementById('patienten-gesamt').innerHTML = "Patienten gesamt: " + humanizeNumber(pieChartDetailsGlobal[i].patienten_gesamt);
+			document.getElementById('patienten-entlassen').innerHTML = "Patienten entlassen: " + humanizeNumber(pieChartDetailsGlobal[i].patienten_entlassen);
+			document.getElementById('patienten-gestorben').innerHTML = "Patienten gestorben: " + humanizeNumber(pieChartDetailsGlobal[i].patienten_gestorben);
+			// document.getElementById('patienten-gestorben-prozent').innerHTML = pieChartDetailsGlobal[i].icd_code;
+		}
+	}
+
+	// $(this).tooltip({container:'body', html: true});
+});
+
+// Clickhandler for pieChart slices
+$('#pieChart').on('click', 'svg > g.p0_pieChart > g > path', function (event){
+
+	event.preventDefault();
+
+	var jahr = document.getElementById('section-header').innerHTML;
+	var icd = document.getElementById('icd-number').innerHTML;
+
+	// Set new headers
+	setMainHeaders(icd, document.getElementById('icd-description').innerHTML, "");
+
+	// remove pie chart
+	document.getElementById("pieChart").innerHTML = "";
+
+	// remove details column content
+	document.getElementById('icd-number').innerHTML = "";
+	document.getElementById('icd-description').innerHTML = "";
+	document.getElementById('patienten-gesamt').innerHTML = "";
+	document.getElementById('patienten-entlassen').innerHTML = "";
+	document.getElementById('patienten-gestorben').innerHTML = "";
+
+	// call method to load appropriate data
+	getCredentialsByIcd(jahr, icd, 0);
 });
 
 
@@ -544,7 +593,7 @@ function createPieChart(pieData, yearData) {
 	"callbacks": {}
 	});
 
-	addPieTooltips(pieData, yearData);
+	// addPieTooltips(pieData, yearData);
 
 }
 
@@ -581,6 +630,12 @@ function setAllHeaders(kapitel, gruppe, klasse, header) {
 	setSectionHeader(header);
 }
 
+function setMainHeaders(kapitel, gruppe, klasse) {
+	setKapitel(kapitel);
+	setGruppe(gruppe);
+	setKlasse(klasse);
+}
+
 // Function to add thousands seperators to large numbers
 function humanizeNumber(n) {
   n = n.toString();
@@ -607,16 +662,20 @@ function createDataForPieChart(colorData, dataObj ){
 		pieData.push({label: dataObj[i].icd_code, value: parseInt(dataObj[i].patienten_gesamt), color: colorData[i]});
 	}
 
+	pieDataGlobal = pieData;
+
 	return pieData;
 }
 
 // Function to add Tooltip data to pie chart
+/*
 function addPieTooltips(pieData, yearDataGlobal) {
 	for(let i = 0, len = pieData.length; i < len; i++) {
 		var path = document.getElementById('p0_segment' + i);
 		path.setAttribute('')
 	}
 }
+*/
 
 
 
