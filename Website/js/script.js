@@ -366,9 +366,10 @@ $('#stacked-barchart').on('mouseover', 'g > g.serie > rect', function(event) {
 // Show Details for pieChart slices
 $('#pieChart').on('mouseover', 'svg > g:nth-of-type(2) > g > path', function (event) {
 	// Change Mousepointer
-	this.style.cursor = "pointer";
-	// console.log(this);
-	console.log(this.getAttribute('fill'));
+	if(uplink.length < 3) {
+		this.style.cursor = "pointer";
+	}
+
 	for(let i = 0, len = pieDataGlobal.length; i < len; i++) {
 		if(this.getAttribute('fill').localeCompare(pieDataGlobal[i].color) == 0) {
 			document.getElementById('icd-number').innerHTML = pieChartDetailsGlobal[i].icd_code;
@@ -386,51 +387,53 @@ $('#pieChart').on('mouseover', 'svg > g:nth-of-type(2) > g > path', function (ev
 // Clickhandler for pieChart slices
 $('#pieChart').on('click', 'svg > g:nth-of-type(2) > g > path', function (event){
 
-	event.preventDefault();
+	if(uplink.length < 3) {
 
-	uplink.push(document.getElementById('kapitel-text').innerHTML);
+		event.preventDefault();
 
-	var jahr = document.getElementById('section-header').innerHTML;
-	var icd = document.getElementById('icd-number').innerHTML;
-	// var btnDescription = document.getElementById('header-gruppe').innerHTML;
+		uplink.push(document.getElementById('kapitel-text').innerHTML);
 
-	// Set new headers
-	setMainHeaders(icd, document.getElementById('icd-description').innerHTML, "");
+		var jahr = document.getElementById('section-header').innerHTML;
+		var icd = document.getElementById('icd-number').innerHTML;
+		// var btnDescription = document.getElementById('header-gruppe').innerHTML;
 
-	// Add button to Header
-	var upBtn = document.createElement('button');
-	upBtn.setAttribute('type', 'button');
-	upBtn.setAttribute('class', 'btn btn-default btn-sm');
-	// upBtn.setAttribute('description', btnDescription);
-	// upBtn.setAttribute('data-toggle', 'tooltip');
-	// upBtn.setAttribute('data-placement', 'right');
-	// upBtn.setAttribute('title', btnLink);
+		// Set new headers
+		setMainHeaders(icd, document.getElementById('icd-description').innerHTML, "");
 
-	var upBtnIcn = document.createElement('i');
-	upBtnIcn.setAttribute('class', 'fa fa-level-up');
-	upBtnIcn.setAttribute('aria-hidden', 'true');
+		// Add button to Header
+		var upBtn = document.createElement('button');
+		upBtn.setAttribute('type', 'button');
+		upBtn.setAttribute('class', 'btn btn-default btn-sm');
+		// upBtn.setAttribute('description', btnDescription);
+		// upBtn.setAttribute('data-toggle', 'tooltip');
+		// upBtn.setAttribute('data-placement', 'right');
+		// upBtn.setAttribute('title', btnLink);
 
-	upBtn.appendChild(upBtnIcn);
+		var upBtnIcn = document.createElement('i');
+		upBtnIcn.setAttribute('class', 'fa fa-level-up');
+		upBtnIcn.setAttribute('aria-hidden', 'true');
 
-	document.getElementById('kapitel-btn').innerHTML = "";
-	document.getElementById('kapitel-btn').appendChild(upBtn);
+		upBtn.appendChild(upBtnIcn);
 
-	// call method to load appropriate data
-	console.log("ICD: " + icd);
+		document.getElementById('kapitel-btn').innerHTML = "";
+		document.getElementById('kapitel-btn').appendChild(upBtn);
 
-	// remove pie chart
-	document.getElementById("pieChart").innerHTML = "";
+		// call method to load appropriate data
+		console.log("ICD: " + icd);
 
-	// remove details column content
-	document.getElementById('icd-number').innerHTML = "";
-	document.getElementById('icd-description').innerHTML = "";
-	document.getElementById('patienten-gesamt').innerHTML = "";
-	document.getElementById('patienten-entlassen').innerHTML = "";
-	document.getElementById('patienten-gestorben').innerHTML = "";
+		// remove pie chart
+		document.getElementById("pieChart").innerHTML = "";
+
+		// remove details column content
+		document.getElementById('icd-number').innerHTML = "";
+		document.getElementById('icd-description').innerHTML = "";
+		document.getElementById('patienten-gesamt').innerHTML = "";
+		document.getElementById('patienten-entlassen').innerHTML = "";
+		document.getElementById('patienten-gestorben').innerHTML = "";
 
 
-	getCredentialsByIcd(jahr, icd, 0);
-
+		getCredentialsByIcd(jahr, icd, 0);
+	}
 
 });
 
