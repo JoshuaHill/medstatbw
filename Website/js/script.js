@@ -58,7 +58,6 @@ function getCredentialsByIcd(jahr, icd_code, followup) {
 			$.each(val, function (m, n) {
 				$.each(n.typ, function (typkey, typval) {
 					if (typkey.localeCompare('value') == 0) {
-						console.log(typval);
 						typ = typval;
 					}
 				});
@@ -94,6 +93,7 @@ function getCredentialsByIcd(jahr, icd_code, followup) {
 function getDataByYear(kapitel, gruppe, typ, jahr, icd) {
 
 	console.log("getting data...");
+	console.log("Type: " + typ);
 	var yearData = [];
 	var queryString;
 
@@ -108,7 +108,8 @@ function getDataByYear(kapitel, gruppe, typ, jahr, icd) {
 		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fkla+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Aicd_typ+%22Klasse%22+.%0A++%3Fx+med%3Aicd_kapitel+" + kapitel + "+.%0A++%3Fx+med%3Aicd_gruppe+" + gruppe + "+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
 	// Nur die Klasse selbst (Query überhaupt notwendig?!?!)
 	} else {
-		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fpe+%3Fpt+%3Fpg+%3Fdt%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Adiagnose_icd+%22" + icd + "%22+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A++%3Fx+med%3Adiagnose_text+%3Fdt%0A%7D";
+		console.log("Klasse query gets calle");
+		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Adiagnose_icd+%22" + icd + "%22+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd%0A%7D";
 	}
 
 	console.log(queryString);
@@ -119,36 +120,36 @@ function getDataByYear(kapitel, gruppe, typ, jahr, icd) {
 				$.each(n.dia_icd, function (dia_icdkey, dia_icdval) {
 					if (dia_icdkey.localeCompare('value') == 0) {
 						dia_icd = dia_icdval;
-						console.log("DIA_ICD: " + dia_icd);
 					}
 				});
 				$.each(n.dia_text, function (dia_textkey, dia_textval) {
 					if (dia_textkey.localeCompare('value') == 0) {
 						dia_text = dia_textval;
-						console.log("DIA_TEXT " + dia_text);
 					}
 				});
 				$.each(n.pe, function (pekey, peval) {
 					if (pekey.localeCompare('value') == 0) {
 						pe = peval;
-						console.log("PE: " + pe);
 					}
 				});
 				$.each(n.pt, function (ptkey, ptval) {
 					if (ptkey.localeCompare('value') == 0) {
 						pt = ptval;
-						console.log("PT: " + pt);
 					}
 				});
 				$.each(n.pg, function (pgkey, pgval) {
 					if (pgkey.localeCompare('value') == 0) {
 						pg = pgval;
-						console.log("PG: " + pg);
 					}
 				});
 				yearData.push({icd_code: dia_icd, icd_text: dia_text, patienten_entlassen: pe, patienten_gestorben: pt, patienten_gesamt: pg});
 			})
 		});
+
+		for(let i = 0, len = yearData.length; i < len; i++) {
+			console.log("Line " + i);
+			console.log(yearData[i]);
+		}
 
 		pieChartDetailsGlobal = yearData;
 		fillTable(overviewKeysJahr, yearData);
@@ -237,8 +238,7 @@ function getDataForMenu(typ, icd_kapitel, icd_gruppe) {
 // load Sidebar menu
 function setMenu(menuData) {
 	document.getElementById('sideNav').innerHTML = "";
-	console.log("set Menu initialized");
-	console.log(menuData.length + " items in menuData Array");
+
 	for (let i = 0, len = menuData.length; i < len; i++) {
 		console.log(menuData.icd_code);
 
@@ -415,6 +415,9 @@ $('#pieChart').on('click', 'svg > g:nth-of-type(2) > g > path', function (event)
 	document.getElementById('kapitel-btn').innerHTML = "";
 	document.getElementById('kapitel-btn').appendChild(upBtn);
 
+	// call method to load appropriate data
+	console.log("ICD: " + icd);
+
 	// remove pie chart
 	document.getElementById("pieChart").innerHTML = "";
 
@@ -425,8 +428,10 @@ $('#pieChart').on('click', 'svg > g:nth-of-type(2) > g > path', function (event)
 	document.getElementById('patienten-entlassen').innerHTML = "";
 	document.getElementById('patienten-gestorben').innerHTML = "";
 
-	// call method to load appropriate data
+
 	getCredentialsByIcd(jahr, icd, 0);
+
+
 });
 
 // Level-Up Clickhandler
