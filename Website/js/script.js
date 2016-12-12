@@ -78,7 +78,7 @@ function getCredentialsByIcd(jahr, icd_code, followup) {
 		});		
 		
 		if(followup == 0) {
-			getDataByYear(credentials.kapitel, credentials.gruppe, credentials.typ, credentials.jahr);
+			getDataByYear(credentials.kapitel, credentials.gruppe, credentials.typ, credentials.jahr, credentials.icd_code);
 		} else if (followup == 1) {
 
 		} else {
@@ -90,8 +90,9 @@ function getCredentialsByIcd(jahr, icd_code, followup) {
 	
 }
 
-function getDataByYear(kapitel, gruppe, typ, jahr) {
-	
+function getDataByYear(kapitel, gruppe, typ, jahr, icd) {
+
+	console.log("getting data...");
 	var yearData = [];
 	var queryString;
 
@@ -103,10 +104,10 @@ function getDataByYear(kapitel, gruppe, typ, jahr) {
 		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fgru+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Aicd_typ+%22Gruppe%22+.%0A++%3Fx+med%3Aicd_kapitel+" + kapitel + "+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
 	// Alle Klassen zu Gruppe
 	} else if(typ.localeCompare("Gruppe") == 0){
-		queryString = "";
+		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fkla+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Aicd_typ+%22Klasse%22+.%0A++%3Fx+med%3Aicd_kapitel+" + kapitel + "+.%0A++%3Fx+med%3Aicd_gruppe+" + gruppe + "+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
 	// Nur die Klasse selbst (Query überhaupt notwendig?!?!)
 	} else {
-		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Aicd_kapitel+" + kapitel +"+.%0A++%3Fx+med%3Aicd_gruppe+" + gruppe +"+.%0A++%3Fx+med%3Aicd_typ+%22" + typ +"%22+.%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
+		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fpe+%3Fpt+%3Fpg+%3Fdt%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Adiagnose_icd+%22" + icd + "%22+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A++%3Fx+med%3Adiagnose_text+%3Fdt%0A%7D";
 	}
 
 	console.log(queryString);
@@ -382,7 +383,7 @@ $('#pieChart').on('mouseover', 'svg > g:nth-of-type(2) > g > path', function (ev
 });
 
 // Clickhandler for pieChart slices
-$('#pieChart').on('click', 'svg > g.p0_pieChart > g > path', function (event){
+$('#pieChart').on('click', 'svg > g:nth-of-type(2) > g > path', function (event){
 
 	event.preventDefault();
 
