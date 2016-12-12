@@ -163,12 +163,12 @@ function getDataByYear(kapitel, gruppe, typ, jahr, icd) {
 
 
 // Get Data for Default Overview
-function getDataForOverview() {
+function getDataByIcd(icd) {
 
 	overviewData = [];
 	overviewDataSVG = [];
 
-	const queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fjahr+%3Fpe+%3Fpt+%3Fpg%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%3Fjahr+.%0A++%3Fx+med%3Adiagnose_icd+%22INSGESAMT%22+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg%0A%7D";
+	const queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fjahr+%3Fpe+%3Fpt+%3Fpg%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%3Fjahr+.%0A++%3Fx+med%3Adiagnose_icd+%22" + icd + "%22+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg%0A%7D";
 
 	$.getJSON(queryString, function (data) {
 		$.each(data.results, function (key, val) {
@@ -318,13 +318,50 @@ function fillTable(head,data) {
 **/
 
 // Clickhandler for dynamically added menu items
-$('#sideNav').on('click', 'li', function(event) {
+$('#sideNav').on('click', 'li > a', function(event) {
+
+	uplink.pop();
+
+	// remove pie chart
+	document.getElementById("pieChart").innerHTML = "";
+
+	// remove details column content
+	document.getElementById('icd-number').innerHTML = "";
+	document.getElementById('icd-description').innerHTML = "";
+	document.getElementById('patienten-gesamt').innerHTML = "";
+	document.getElementById('patienten-entlassen').innerHTML = "";
+	document.getElementById('patienten-gestorben').innerHTML = "";
+	
+	if(uplink.length == 0) {
+		uplink.push({icd: document.getElementById('kapitel-text').innerHTML, text: document.getElementById('header-gruppe').innerHTML});
+	}
+
+
+	var link = this.innerHTML;
+	var text = this.getAttribute('data-original-title');
+
+	uplink.push({icd: link, text: text});
+
+	console.log(text);
+
 	event.preventDefault();
 
+	/*
 	for(let i = 0, len = menuDataGlobal.length; i < len; i++) {
 		if(menuDataGlobal[i].icd_code === $(this).text())
 			console.log("Index " + i + ": " + menuDataGlobal[i].text);
 	}
+	*/
+
+
+	document.getElementById('stacked-barchart').innerHTML = "";
+
+	document.getElementById('kapitel-text').innerHTML = link;
+	document.getElementById('header-gruppe').innerHTML = text;
+
+	getDataByIcd(link);
+
+
 });
 
 // Tooltips for dynamically added menu items
@@ -759,7 +796,7 @@ function addPieTooltips(pieData, yearDataGlobal) {
 $(document).ready(function() {
 	console.log(distinctColors);
 	getDataForMenu("Kapitel", 0, 0);
-	getDataForOverview();
+	getDataByIcd("INSGESAMT");
 	setAllHeaders("Alle Krankheiten", "", "", "2000 - 2014");
 });
 
