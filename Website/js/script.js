@@ -391,7 +391,7 @@ $('#pieChart').on('click', 'svg > g:nth-of-type(2) > g > path', function (event)
 
 		event.preventDefault();
 
-		uplink.push(document.getElementById('kapitel-text').innerHTML);
+		uplink.push({icd: document.getElementById('kapitel-text').innerHTML, text: document.getElementById('header-gruppe').innerHTML});
 
 		var jahr = document.getElementById('section-header').innerHTML;
 		var icd = document.getElementById('icd-number').innerHTML;
@@ -443,8 +443,9 @@ $('#kapitel-btn').on('click', 'button', function(event) {
 	event.preventDefault();
 
 	var jahr = document.getElementById('section-header').innerHTML;
-	var icd = uplink[uplink.length - 1];
-	var description = this.getAttribute('description');
+	var icd = uplink[uplink.length - 1].icd;
+
+	var description = uplink[uplink.length - 1].text;
 
 	// Set new headers
 	setMainHeaders(icd, description, "");
