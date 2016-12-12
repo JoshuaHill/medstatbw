@@ -13,3 +13,7 @@
 .tooltip-inner {
     white-space:pre-wrap;
 }
+
+#kapitel-btn {
+    padding-left: 5px;
+}

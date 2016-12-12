@@ -328,19 +328,19 @@ $('#sideNav').on('click', 'li', function(event) {
 
 // Tooltips for dynamically added menu items
 $('#sideNav').on('mouseover', 'li', function(event) {
-	$('[data-toggle="tooltip"]').tooltip(); 
+	$('[data-toggle="tooltip"]').tooltip();
 });
 
 // Clickhandler for bars of stacked bar chart
 $('#stacked-barchart').on('click', 'g > g.serie > rect', function(event) {
 	// Hide tooltip to prevent it from staying after a bar is clicked
-	$(this).tooltip('hide')
+	$(this).tooltip('hide');
 
 	event.preventDefault();	
 
 	var jahr = (this).getAttribute('jahr');
 	setSectionHeader(jahr);
-	var icd = document.getElementById('header-kapitel').innerHTML;
+	var icd = document.getElementById('kapitel-text').innerHTML;
 	if(icd.localeCompare("Alle Krankheiten") == 0) {
 		icd = "INSGESAMT";
 	}
@@ -389,9 +389,29 @@ $('#pieChart').on('click', 'svg > g:nth-of-type(2) > g > path', function (event)
 
 	var jahr = document.getElementById('section-header').innerHTML;
 	var icd = document.getElementById('icd-number').innerHTML;
+	var btnLink = document.getElementById('kapitel-text').innerHTML;
+	var btnDescription = document.getElementById('header-gruppe').innerHTML;
 
 	// Set new headers
 	setMainHeaders(icd, document.getElementById('icd-description').innerHTML, "");
+
+	// Add button to Header
+	var upBtn = document.createElement('button');
+	upBtn.setAttribute('type', 'button');
+	upBtn.setAttribute('class', 'btn btn-default btn-sm');
+	upBtn.setAttribute('description', btnDescription);
+	upBtn.setAttribute('data-toggle', 'tooltip');
+	upBtn.setAttribute('data-placement', 'right');
+	upBtn.setAttribute('title', btnLink);
+
+	var upBtnIcn = document.createElement('i');
+	upBtnIcn.setAttribute('class', 'fa fa-level-up');
+	upBtnIcn.setAttribute('aria-hidden', 'true');
+
+	upBtn.appendChild(upBtnIcn);
+
+	document.getElementById('kapitel-btn').innerHTML = "";
+	document.getElementById('kapitel-btn').appendChild(upBtn);
 
 	// remove pie chart
 	document.getElementById("pieChart").innerHTML = "";
@@ -406,6 +426,39 @@ $('#pieChart').on('click', 'svg > g:nth-of-type(2) > g > path', function (event)
 	// call method to load appropriate data
 	getCredentialsByIcd(jahr, icd, 0);
 });
+
+// Level-Up Clickhandler
+$('#kapitel-btn').on('click', 'button', function(event) {
+
+	event.preventDefault();
+
+	var jahr = document.getElementById('section-header').innerHTML;
+	var icd = this.getAttribute('title');
+	var description = this.getAttribute('description');
+
+	// Set new headers
+	setMainHeaders(icd, description, "");
+
+	console.log("BTN DATA: " + jahr + ", " + icd);
+
+	if(icd.localeCompare("Alle Krankheiten") == 0) {
+		icd = "INSGESAMT";
+	}
+
+	// remove pie chart
+	document.getElementById("pieChart").innerHTML = "";
+
+	// remove details column content
+	document.getElementById('icd-number').innerHTML = "";
+	document.getElementById('icd-description').innerHTML = "";
+	document.getElementById('patienten-gesamt').innerHTML = "";
+	document.getElementById('patienten-entlassen').innerHTML = "";
+	document.getElementById('patienten-gestorben').innerHTML = "";
+
+	getCredentialsByIcd(jahr, icd, 0)
+
+});
+
 
 
 
@@ -601,7 +654,6 @@ function createPieChart(pieData, yearData) {
 
 
 
-
 /**
 *
 * HELPER FUNCTIONS
@@ -609,7 +661,7 @@ function createPieChart(pieData, yearData) {
 **/
 
 function setKapitel(kapitel) {
-	document.getElementById('header-kapitel').innerHTML = kapitel;
+	document.getElementById('kapitel-text').innerHTML = kapitel;
 }
 
 function setGruppe(gruppe) {
