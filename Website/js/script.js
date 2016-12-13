@@ -255,7 +255,6 @@ function setMenu(menuData) {
 		var br = document.createElement('br');
 
 		myLiA.appendChild(icd_code);
-
 		myLi.appendChild(myLiA);
 
 		document.getElementById('sideNav').appendChild(myLi);
@@ -320,7 +319,13 @@ function fillTable(head,data) {
 // Clickhandler for dynamically added menu items
 $('#sideNav').on('click', 'li > a', function(event) {
 
-	uplink.pop();
+
+	document.getElementById("stacked-barchart").innerHTML = "";
+	document.getElementById("stacked-barchart").setAttribute('width', 960);
+	document.getElementById("stacked-barchart").setAttribute('height', 500);
+
+	uplink = [];
+	// uplink.pop();
 
 	// remove pie chart
 	document.getElementById("pieChart").innerHTML = "";
@@ -331,16 +336,18 @@ $('#sideNav').on('click', 'li > a', function(event) {
 	document.getElementById('patienten-gesamt').innerHTML = "";
 	document.getElementById('patienten-entlassen').innerHTML = "";
 	document.getElementById('patienten-gestorben').innerHTML = "";
-	
+
+
 	if(uplink.length == 0) {
 		uplink.push({icd: document.getElementById('kapitel-text').innerHTML, text: document.getElementById('header-gruppe').innerHTML});
 	}
 
 
+
 	var link = this.innerHTML;
 	var text = this.getAttribute('data-original-title');
 
-	uplink.push({icd: link, text: text});
+	//uplink.push({icd: link, text: text});
 
 	console.log(text);
 
@@ -358,6 +365,8 @@ $('#sideNav').on('click', 'li > a', function(event) {
 
 	document.getElementById('kapitel-text').innerHTML = link;
 	document.getElementById('header-gruppe').innerHTML = text;
+
+	console.log("LINK: " + link);
 
 	getDataByIcd(link);
 
@@ -479,17 +488,24 @@ $('#kapitel-btn').on('click', 'button', function(event) {
 
 	event.preventDefault();
 
+	var icd;
 	var jahr = document.getElementById('section-header').innerHTML;
-	var icd = uplink[uplink.length - 1].icd;
+	var description;
 
-	var description = uplink[uplink.length - 1].text;
+	try {
+		icd = uplink[uplink.length - 1].icd;
+		description = uplink[uplink.length - 1].text;
+	} catch(err) {
+		icd = "Alle Krankheiten";
+		description = "";
+	}
 
 	// Set new headers
 	setMainHeaders(icd, description, "");
 
 	console.log("BTN DATA: " + jahr + ", " + icd);
 
-	if(icd.localeCompare("Alle Krankheiten") == 0) {
+	if(icd.localeCompare("Alle Krankheiten") == 0 ||icd == undefined) {
 		icd = "INSGESAMT";
 		document.getElementById('kapitel-btn').innerHTML = "";
 	}
