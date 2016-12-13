@@ -73,6 +73,7 @@ function setIcdCode(kapitel, gruppe, type, years) {
 		} else {
 			console.log("H A L L O");
 			removeBarChart(960, 500);
+			getCredentialsByIcd(2000, "INSGESAMT", 1, true);
 			getDataByIcd("INSGESAMT");
 		}
 
@@ -351,16 +352,14 @@ function getDataForMenu(typ, icd_kapitel, icd_gruppe, icd_code, levelUp) {
 //
 function getHigherLevelIcd(kapitel, gruppe, typ, jahr, icd_code, years) {
 
-
+	setIcdCode(kapitel, gruppe, typ, years);
 
 	if(years == false) {
 
-		setIcdCode(kapitel, gruppe, typ, years);
-
 		// Ansicht für ein Jahr
-		if(typ.localeCompare("Kapitel") == 0) {
+		if (typ.localeCompare("Kapitel") == 0) {
 			typ = "Insgesamt";
-		} else if (typ.localeCompare("Gruppe") == 0 ) {
+		} else if (typ.localeCompare("Gruppe") == 0) {
 			typ = "Kapitel";
 		} else if (typ.localeCompare("Klasse") == 0) {
 			typ = "Gruppe";
@@ -370,15 +369,7 @@ function getHigherLevelIcd(kapitel, gruppe, typ, jahr, icd_code, years) {
 		getDataForMenu(typ, kapitel, gruppe, icd_code, true);
 		console.log("T Y P  :   " + typ);
 
-
-	} else {
-
-		setIcdCode(kapitel, gruppe, typ, years);
-
-
-
 	}
-
 	/*
 	if(credentials.type.localeCompare("Kapitel") == 0) {
 		getCredentialsByIcd(2000, "Insgesamt", 1);
