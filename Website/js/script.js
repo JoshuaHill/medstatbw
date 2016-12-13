@@ -831,8 +831,9 @@ function addPieTooltips(pieData, yearDataGlobal) {
 
 // Startup 
 $(document).ready(function() {
-	console.log(distinctColors);
-	getDataForMenu("INSGESAMT", 0, 0);
+	// console.log(distinctColors);
+	// getDataForMenu("INSGESAMT", 0, 0);
+	getCredentialsByIcd(2000, "INSGESAMT", 1);
 	getDataByIcd("INSGESAMT");
 	setAllHeaders("Alle Krankheiten", "", "", "2000 - 2014");
 });
