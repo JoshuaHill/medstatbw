@@ -8,6 +8,7 @@ var menuDataGlobal;
 var pieChartDetailsGlobal;
 var pieDataGlobal;
 var uplink = [];
+var sideNav = false;
 
 var overviewKeysJahre = [];
 overviewKeysJahre.push("Jahr");
@@ -334,11 +335,16 @@ function fillTable(head,data) {
 // Clickhandler for dynamically added menu items
 $('#sideNav').on('click', 'li > a', function(event) {
 
+	// set sideNav to true
+	sideNav = true;
+
 	// Hide tooltip to prevent it from staying after click
 	$(this).tooltip('hide');
 
 	// empty uplink array
 	uplink = [];
+
+	setSectionHeader("2000 - 2014");
 
 	// remove stacked barchart
 	document.getElementById("stacked-barchart").innerHTML = "";
@@ -375,6 +381,9 @@ $('#sideNav').on('click', 'li > a', function(event) {
 	}
 	*/
 
+	// Add Uplink Button
+	addUplinkButton();
+
 
 	// document.getElementById('stacked-barchart').innerHTML = "";
 	document.getElementById('kapitel-text').innerHTML = link;
@@ -397,6 +406,10 @@ $('#sideNav').on('mouseover', 'li', function(event) {
 
 // Clickhandler for bars of stacked bar chart
 $('#stacked-barchart').on('click', 'g > g.serie > rect', function(event) {
+
+	// Set sideNav to false
+	sideNav = false;
+
 	// Hide tooltip to prevent it from staying after a bar is clicked
 	$(this).tooltip('hide');
 
@@ -450,6 +463,9 @@ $('#pieChart').on('mouseover', 'svg > g:nth-of-type(2) > g > path', function (ev
 // Clickhandler for pieChart slices
 $('#pieChart').on('click', 'svg > g:nth-of-type(2) > g > path', function (event){
 
+	// set sideNav to false
+	sideNav = false;
+
 	if(uplink.length < 3) {
 
 		event.preventDefault();
@@ -464,25 +480,7 @@ $('#pieChart').on('click', 'svg > g:nth-of-type(2) > g > path', function (event)
 		setMainHeaders(icd, document.getElementById('icd-description').innerHTML, "");
 
 		// Add button to Header
-		var upBtn = document.createElement('button');
-		upBtn.setAttribute('type', 'button');
-		upBtn.setAttribute('class', 'btn btn-default btn-sm');
-		// upBtn.setAttribute('description', btnDescription);
-		// upBtn.setAttribute('data-toggle', 'tooltip');
-		// upBtn.setAttribute('data-placement', 'right');
-		// upBtn.setAttribute('title', btnLink);
-
-		var upBtnIcn = document.createElement('i');
-		upBtnIcn.setAttribute('class', 'fa fa-level-up');
-		upBtnIcn.setAttribute('aria-hidden', 'true');
-
-		upBtn.appendChild(upBtnIcn);
-
-		document.getElementById('kapitel-btn').innerHTML = "";
-		document.getElementById('kapitel-btn').appendChild(upBtn);
-
-		// call method to load appropriate data
-		console.log("ICD: " + icd);
+		addUplinkButton();
 
 		// remove pie chart
 		document.getElementById("pieChart").innerHTML = "";
@@ -541,7 +539,13 @@ $('#kapitel-btn').on('click', 'button', function(event) {
 
 	uplink.pop();
 
-	getCredentialsByIcd(jahr, icd, 0);
+
+	if(sideNav == false) {
+		getCredentialsByIcd(jahr, icd, 0);
+	} else {
+		getDataByIcd(icd);
+	}
+
 
 	getCredentialsByIcd(jahr, icd, 1);
 
@@ -817,6 +821,26 @@ function addPieTooltips(pieData, yearDataGlobal) {
 	}
 }
 */
+
+// Function to create uplink button
+function addUplinkButton() {
+	var upBtn = document.createElement('button');
+	upBtn.setAttribute('type', 'button');
+	upBtn.setAttribute('class', 'btn btn-default btn-sm');
+	// upBtn.setAttribute('description', btnDescription);
+	// upBtn.setAttribute('data-toggle', 'tooltip');
+	// upBtn.setAttribute('data-placement', 'right');
+	// upBtn.setAttribute('title', btnLink);
+
+	var upBtnIcn = document.createElement('i');
+	upBtnIcn.setAttribute('class', 'fa fa-level-up');
+	upBtnIcn.setAttribute('aria-hidden', 'true');
+
+	upBtn.appendChild(upBtnIcn);
+
+	document.getElementById('kapitel-btn').innerHTML = "";
+	document.getElementById('kapitel-btn').appendChild(upBtn);
+}
 
 
 
