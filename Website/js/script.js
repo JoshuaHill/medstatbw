@@ -9,12 +9,14 @@ var pieChartDetailsGlobal;
 var pieDataGlobal;
 var sideNav = false;
 
-var searchArray = [
+var years = [
 	"2000", "2001", "2002", "2003",
 	"2004", "2005", "2006", "2007",
 	"2008", "2009", "2010", "2011",
 	"2012", "2013", "2014"
 ];
+
+var searchArray  = years;
 
 var overviewKeysJahre = [];
 overviewKeysJahre.push("Jahr");
@@ -82,7 +84,7 @@ function getAllCodesAndDescriptions() {
 			})
 		});
 
-		addSearchHandlers();
+		searchHandlers();
 
 	});
 
@@ -503,7 +505,7 @@ function fillTable(head,data) {
 *
 **/
 
-function addSearchHandlers() {
+function searchHandlers() {
 	$('#search').autocomplete({
 		source: function(request, response) {
 			var results = $.ui.autocomplete.filter(searchArray, request.term);
@@ -512,11 +514,39 @@ function addSearchHandlers() {
 		}
 	});
 
+
 	$('#search').keypress(function (e) {
 		if(e.which == 13) {
+			var test = $('#search').val();
+			console.log("INPUT FORM: " + test);
+
+			// Nur Jahr eingegeben
+			for(let i = 0, len = years.length; i < len; i++) {
+				if(test.localeCompare(years[i]) == 0) {
+					// Set sideNav to false
+					sideNav = false;
+
+					var jahr = test;
+					setSectionHeader(jahr);
+					var icd = "INSGESAMT";
+
+					// "remove" the barcharts
+					removeBarChart(0, 0);
+
+					// remove pie chart
+					removePieChart();
+
+					// call method to load the appropriate data
+					getCredentialsByIcd(jahr, icd, 0);
+				}
+			}
+
+			// Nur Krankheit
+
 
 		}
 	})
+
 }
 
 // Clickhandler for dynamically added menu items
@@ -528,9 +558,6 @@ $('#sideNav').on('click', 'li > a', function(event) {
 	// Hide tooltip to prevent it from staying after click
 	$(this).tooltip('hide');
 
-	// empty uplink array
-	// uplink = [];
-
 	setSectionHeader("2000 - 2014");
 
 	// remove stacked barchart
@@ -539,40 +566,21 @@ $('#sideNav').on('click', 'li > a', function(event) {
 	// remove pie chart
 	removePieChart();
 
-	// push current selection into uplink array
-	// uplink.push({icd: document.getElementById('kapitel-text').innerHTML, text: document.getElementById('header-gruppe').innerHTML});
-
 	// set link and text variables
 	var link = this.innerHTML;
 	var text = this.getAttribute('data-original-title');
-
-	// uplink.push({icd: link, text: text});
 
 	console.log(text);
 
 	event.preventDefault();
 
-	/*
-	for(let i = 0, len = menuDataGlobal.length; i < len; i++) {
-		if(menuDataGlobal[i].icd_code === $(this).text())
-			console.log("Index " + i + ": " + menuDataGlobal[i].text);
-	}
-	*/
-
 	// Add Uplink Button
 	addUplinkButton();
 
-
-	// document.getElementById('stacked-barchart').innerHTML = "";
 	document.getElementById('kapitel-text').innerHTML = link;
 	document.getElementById('header-gruppe').innerHTML = text;
 
-	console.log("LINK: " + link);
-
-
 	getCredentialsByIcd(2000, link, 1);
-
-	//console.log("CREDS: " + creds);
 
 	getDataByIcd(link);
 
