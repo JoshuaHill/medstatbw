@@ -9,6 +9,8 @@ var pieChartDetailsGlobal;
 var pieDataGlobal;
 var sideNav = false;
 
+var allIcdCodes = [];
+
 var years = [
 	"2000", "2001", "2002", "2003",
 	"2004", "2005", "2006", "2007",
@@ -81,6 +83,8 @@ function getAllCodesAndDescriptions() {
 
 				searchArray.push(di);
 				searchArray.push(dt);
+
+				allIcdCodes.push({icd_code: di, icd_text: dt});
 			})
 		});
 
@@ -95,11 +99,6 @@ function setIcdCode(kapitel, gruppe, type, years) {
 	var credz;
 
 	var queryString;
-
-	console.log("YEARS: " + years);
-	console.log(kapitel);
-	console.log(gruppe);
-	console.log("MDUSAFAFFAFASF " + type);
 
 	if(type.localeCompare("Klasse") == 0) {
 		console.log("QUERY KLASSE");
@@ -517,35 +516,46 @@ function searchHandlers() {
 
 	$('#search').keypress(function (e) {
 		if(e.which == 13) {
-			var test = $('#search').val();
-			console.log("INPUT FORM: " + test);
+			var inputValue = $('#search').val();
+			console.log("INPUT FORM: " + inputValue);
 
-			// Nur Jahr eingegeben
-			for(let i = 0, len = years.length; i < len; i++) {
-				if(test.localeCompare(years[i]) == 0) {
-					// Set sideNav to false
-					sideNav = false;
+			// Look for hit in searchArray (only ICD, Name OR Year
+			for(let i = 0, len = searchArray.length; i < len; i++) {
+				// hit
+				if(inputValue.localeCompare(searchArray[i]) == 0) {
 
-					var jahr = test;
-					setSectionHeader(jahr);
-					var icd = "INSGESAMT";
+					// Check years
+					for(let j = 0, len = years.length; j < len; j++) {
+						// Year found
+						if(inputValue.localeCompare(years[j]) == 0) {
+							// Load data for year
+							loadViewForYear(years[j], "INSGESAMT");
+						}
+					}
 
-					// "remove" the barcharts
-					removeBarChart(0, 0);
+					if(i%2==0) {
+						// is description
+						var codePos = (i - 16) / 2;
+						var icd_code;
 
-					// remove pie chart
-					removePieChart();
+						icd_code = allIcdCodes[codePos].icd_code;
 
-					// call method to load the appropriate data
-					getCredentialsByIcd(jahr, icd, 0);
+						loadViewForAllYears(icd_code, inputValue);
+
+					} else {
+						// is icd_code
+						var codePos = (i - 15) / 2;
+						var icd_text;
+
+						icd_text = allIcdCodes[codePos].icd_text;
+
+						loadViewForAllYears(inputValue, icd_text);
+
+					}
 				}
 			}
-
-			// Nur Krankheit
-
-
 		}
-	})
+	});
 
 }
 
@@ -553,36 +563,18 @@ function searchHandlers() {
 $('#sideNav').on('click', 'li > a', function(event) {
 
 	// set sideNav to true
-	sideNav = true;
+	// sideNav = true;
 
 	// Hide tooltip to prevent it from staying after click
 	$(this).tooltip('hide');
-
-	setSectionHeader("2000 - 2014");
-
-	// remove stacked barchart
-	removeBarChart(960, 500);
-
-	// remove pie chart
-	removePieChart();
 
 	// set link and text variables
 	var link = this.innerHTML;
 	var text = this.getAttribute('data-original-title');
 
-	console.log(text);
+	loadViewForAllYears(link, text);
 
-	event.preventDefault();
-
-	// Add Uplink Button
-	addUplinkButton();
-
-	document.getElementById('kapitel-text').innerHTML = link;
-	document.getElementById('header-gruppe').innerHTML = text;
-
-	getCredentialsByIcd(2000, link, 1);
-
-	getDataByIcd(link);
+	// event.preventDefault();
 
 });
 
@@ -650,27 +642,13 @@ $('#pieChart').on('mouseover', 'svg > g:nth-of-type(2) > g > path', function (ev
 // Clickhandler for pieChart slices
 $('#pieChart').on('click', 'svg > g:nth-of-type(2) > g > path', function (event){
 
-	// set sideNav to false
-	sideNav = false;
-
 	event.preventDefault();
 
 	var jahr = document.getElementById('section-header').innerHTML;
 	var icd = document.getElementById('icd-number').innerHTML;
+	var description = document.getElementById('icd-description').innerHTML;
 
-	// Set new headers
-	setMainHeaders(icd, document.getElementById('icd-description').innerHTML, "");
-
-	// Add button to Header
-	addUplinkButton();
-
-	// remove pie chart
-	removePieChart();
-
-	// call method to load the appropriate data
-	getCredentialsByIcd(jahr, icd, 0);
-	// update sidebar menu
-	getCredentialsByIcd(jahr, icd, 1);
+	loadViewForYear(jahr, icd, description);
 
 });
 
@@ -1005,6 +983,62 @@ function removeBarChart(width, height) {
 	document.getElementById("stacked-barchart").innerHTML = "";
 	document.getElementById("stacked-barchart").setAttribute('width', width);
 	document.getElementById("stacked-barchart").setAttribute('height', height);
+}
+
+function loadViewForYear(jahr, icd, description) {
+
+	// Set sideNav to false
+	sideNav = false;
+
+	// Set new headers
+	setAllHeaders(icd, description, "", jahr);
+
+	// Add button to Header
+	if(icd.localeCompare("INSGESAMT") !== 0) {
+		addUplinkButton();
+	}
+
+	// remove bar chart
+	removeBarChart(0, 0);
+
+	// remove pie chart
+	removePieChart();
+
+	// call method to load appropriate data
+	getCredentialsByIcd(jahr, icd, 0);
+
+	// update sidebar menu
+	getCredentialsByIcd(jahr, icd, 1);
+}
+
+function loadViewForAllYears(icd, text) {
+
+	// set sideNav to true
+	sideNav = true;
+
+	// Hide tooltip to prevent it from staying after click
+	$(this).tooltip('hide');
+
+	setSectionHeader("2000 - 2014");
+
+	// remove stacked barchart
+	removeBarChart(960, 500);
+
+	// remove pie chart
+	removePieChart();
+
+	// event.preventDefault();
+
+	// Add Uplink Button
+	addUplinkButton();
+
+	document.getElementById('kapitel-text').innerHTML = icd;
+	document.getElementById('header-gruppe').innerHTML = text;
+
+	getCredentialsByIcd(2000, icd, 1);
+
+	getDataByIcd(icd);
+
 }
 
 
