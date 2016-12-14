@@ -41,7 +41,7 @@
           <input type="text" class="form-control" placeholder="Suchen...">
         </form>
         -->
-        <div class="ui-widget float-xs-right">
+        <div class="ui-widget float-xs-right" id="search-div">
           <!-- <form class="float-xs-right" id="form"> -->
             <input type="text" class="form-control" placeholder="Suchen..." id="search">
           <!-- </form> -->
@@ -102,7 +102,7 @@
           <div class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 main">
           <h2 id="section-header"></h2>
           <div class="table-responsive">
-            <table class="table table-striped" id="stats-table">
+            <table class="table table-striped tablesorter" id="stats-table">
               <thead id="stats-table-head">
                 <!-- Table head goes here -->
               </thead>
@@ -125,6 +125,8 @@
     <script>window.jQuery || document.write('<script src="js/vendor/jquery.min.js"><\/script>')</script>
     <!-- JqueryUI -->
     <script src="jquery-ui-1.12.1/jquery-ui.js"></script>
+    <!-- Tablesorter -->
+    <script type="text/javascript" src="tablesorter/jquery.tablesorter.js"></script>
     <!-- Tether -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js" integrity="sha384-Plbmg8JY28KFelvJVai01l8WyZzrYWG825m+cZ0eDDS1f7d/js6ikvy1+X+guPIB" crossorigin="anonymous"></script>
     <!-- Bootstrap -->

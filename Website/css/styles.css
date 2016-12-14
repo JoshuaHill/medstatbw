@@ -18,6 +18,10 @@
     padding-left: 5px;
 }
 
+#search-div {
+    padding-right: 40px;
+}
+
 /*jQuery UI autocomplete for bootstrap*/
 .ui-autocomplete {
     position: absolute;

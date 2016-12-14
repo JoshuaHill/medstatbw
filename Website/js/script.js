@@ -492,7 +492,14 @@ function fillTable(head,data) {
 		}
 
 		document.getElementById('stats-table-body').appendChild(myTrBody);
-	}	
+	}
+
+	$('#stats-table').tablesorter({
+		textExtraction: function (node) {
+			return $(node).text().replace(/\./g, '');
+		}
+	});
+	
 }
 
 
@@ -786,6 +793,7 @@ function createStackedBarChart(jsonObj) {
 	    .attr("text-anchor", "end")
 	    .text(function(d) { return d; });
 	*/
+
 }
 
 
@@ -1035,7 +1043,7 @@ function loadViewForAllYears(icd, text) {
 	document.getElementById('kapitel-text').innerHTML = icd;
 	document.getElementById('header-gruppe').innerHTML = text;
 
-	getCredentialsByIcd(2000, icd, 1);
+	getCredentialsByIcd(2000, icd, 1, true);
 
 	getDataByIcd(icd);
 
