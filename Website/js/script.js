@@ -494,12 +494,13 @@ function fillTable(head,data) {
 		document.getElementById('stats-table-body').appendChild(myTrBody);
 	}
 
+	// attach table sorter to table
 	$('#stats-table').tablesorter({
 		textExtraction: function (node) {
+			// remove thousands separator for ordering correctly
 			return $(node).text().replace(/\./g, '');
 		}
 	});
-	
 }
 
 
@@ -953,6 +954,7 @@ function addPieTooltips(pieData, yearDataGlobal) {
 	}
 }
 */
+
 
 // Function to create uplink button
 function addUplinkButton() {
