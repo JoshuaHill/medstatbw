@@ -111,6 +111,7 @@ function setIcdCode(kapitel, gruppe, type, years) {
 		document.getElementById('kapitel-btn').innerHTML = "";
 		if(years == false) {
 			getCredentialsByIcd(2000, "INSGESAMT", 1, false);
+			addYearOverviewButton();
 		} else {
 			console.log("H A L L O");
 			removeBarChart(960, 500);
@@ -144,6 +145,9 @@ function setIcdCode(kapitel, gruppe, type, years) {
 		console.log("C R E D Z : " + credz.icd_code + ", " + credz.icd_text);
 
 		setMainHeaders(credz.icd_code, credz.icd_text, "");
+
+		addYearOverviewButton();
+
 		getCredentialsByIcd(2000, credz.icd_code, 1, false);
 
 		if(years == true) {
@@ -408,9 +412,11 @@ function getHigherLevelIcd(kapitel, gruppe, typ, jahr, icd_code, years) {
 
 		getDataByYear(kapitel, gruppe, typ, jahr);
 		getDataForMenu(typ, kapitel, gruppe, icd_code, true);
+
 		console.log("T Y P  :   " + typ);
 
 	}
+
 	/*
 	if(credentials.type.localeCompare("Kapitel") == 0) {
 		getCredentialsByIcd(2000, "Insgesamt", 1);
@@ -692,6 +698,7 @@ $('#kapitel-btn').on('click', 'button', function(event) {
 	if (sideNav == false) {
 		console.log("SIDE_NAV == FALSE");
 
+
 		if(icd.localeCompare("Alle Krankheiten") != 0) {
 			removePieChart();
 			getCredentialsByIcd(jahr, icd, 2, false);
@@ -700,6 +707,7 @@ $('#kapitel-btn').on('click', 'button', function(event) {
 		console.log("SIDE_NAV == TRUE");
 		getCredentialsByIcd(2000, icd, 2, true);
 	}
+
 });
 
 
