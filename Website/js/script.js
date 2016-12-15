@@ -146,7 +146,10 @@ function setIcdCode(kapitel, gruppe, type, years) {
 
 		setMainHeaders(credz.icd_code, credz.icd_text, "");
 
-		addYearOverviewButton();
+		if(years == false) {
+			addYearOverviewButton();
+		}
+
 
 		getCredentialsByIcd(2000, credz.icd_code, 1, false);
 
@@ -478,7 +481,15 @@ function fillTable(head,data) {
 		myTrHead.appendChild(myTh);
 	}
 
+	// Gestorben % feasible?
+	/*
+	var patGesText = document.createTextNode('Patienten gestorben %');
+	var patGesTh = document.createElement('th');
+	patGesTh.appendChild(patGesText);
+	myTrHead.appendChild(patGesTh);
+
 	document.getElementById('stats-table-head').appendChild(myTrHead);
+	*/
 
 	for (let i = 0, len = data.length; i < len; i++) {
 		var myTrBody = document.createElement('tr');
