@@ -503,7 +503,7 @@ function fillTable(head,data) {
 	});
 }
 
-
+ 
 
 
 /**
@@ -596,6 +596,10 @@ $('#stacked-barchart').on('click', 'g > g.serie > rect', function(event) {
 
 	// Set sideNav to false
 	sideNav = false;
+
+	// show details div
+	$('#some-details').show();
+	$('#pieChart').show();
 
 	// Hide tooltip to prevent it from staying after a bar is clicked
 	$(this).tooltip('hide');
@@ -1000,6 +1004,10 @@ function loadViewForYear(jahr, icd, description) {
 	// Set sideNav to false
 	sideNav = false;
 
+	// show details div
+	$('#some-details').show();
+	$('#pieChart').show();
+
 	// Set new headers
 	setAllHeaders(icd, description, "", jahr);
 
@@ -1037,6 +1045,10 @@ function loadViewForAllYears(icd, text) {
 	// remove pie chart
 	removePieChart();
 
+	// hide details div
+	$('#some-details').hide();
+	$('#pieChart').hide();
+
 	// event.preventDefault();
 
 	// Add Uplink Button
@@ -1068,6 +1080,8 @@ $(document).ready(function() {
 	// getDataForMenu("INSGESAMT", 0, 0);
 	getAllCodesAndDescriptions();
 	getCredentialsByIcd(2000, "INSGESAMT", 1, true);
+	$('#some-details').hide();
+	$('#pieChart').hide();
 	getDataByIcd("INSGESAMT");
 	setAllHeaders("Alle Krankheiten", "", "", "2000 - 2014");
 });

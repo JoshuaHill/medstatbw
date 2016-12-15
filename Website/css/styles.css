@@ -26,6 +26,13 @@
     padding-right: 40px;
 }
 
+@media (max-width: 1290px) {
+    #some-details {
+        padding-left: 150px;
+    }
+}
+
+
 /*Styles for table sorting*/
 
 

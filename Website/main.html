@@ -1,143 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <!-- <link rel="icon" href="../../favicon.ico"> -->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- <link rel="icon" href="../../favicon.ico"> -->
 
-    <title>MedStat BW</title>
+  <title>MedStat BW</title>
 
-    <!-- Bootstrap core CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom styles for this template -->
-    <link href="css/dashboard.css" rel="stylesheet">
-    <!-- FontAwesome for icons -->
-    <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
-    <!-- JqueryUI -->
-    <link rel="stylesheet" href="jquery-ui-1.12.1/jquery-ui.min.css">
-    <!-- Tablesorter -->
-    <link href="tablesorter/themes/blue/style.css" rel="stylesheet" type="text/css" />
-    <!-- Custom styles -->
-    <link href="css/styles.css" rel="stylesheet">
-  </head>
+  <!-- Bootstrap core CSS -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom styles for this template -->
+  <link href="css/dashboard.css" rel="stylesheet">
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
+  <!-- JqueryUI -->
+  <link rel="stylesheet" href="jquery-ui-1.12.1/jquery-ui.min.css">
+  <!-- Tablesorter -->
+  <link href="tablesorter/themes/blue/style.css" rel="stylesheet" type="text/css" />
+  <!-- Custom styles -->
+  <link href="css/styles.css" rel="stylesheet">
+</head>
 
-  <body>
+<body>
 
-    <!-- Top Navigation Bar -->
-    <nav class="navbar navbar-dark navbar-fixed-top bg-inverse">
-      <button type="button" class="navbar-toggler hidden-sm-up" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation"></button>
-      <a class="navbar-brand" href="#">MedStat BW</a>
-      <div id="navbar">
-        <nav class="nav navbar-nav float-xs-left">
-          <a class="nav-item nav-link" href="#">Home</a>
-          <a class="nav-item nav-link" href="#">About</a>
-          <a class="nav-item nav-link" href="#">Quellen</a>
-          <a class="nav-item nav-link" href="#">Impressum</a>
-        </nav>
+<!-- Top Navigation Bar -->
+<nav class="navbar navbar-dark navbar-fixed-top bg-inverse">
+  <button type="button" class="navbar-toggler hidden-sm-up" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation"></button>
+  <a class="navbar-brand" href="#">MedStat BW</a>
+  <div id="navbar">
+    <nav class="nav navbar-nav float-xs-left">
+      <a class="nav-item nav-link" href="#">Home</a>
+      <a class="nav-item nav-link" href="#">About</a>
+      <a class="nav-item nav-link" href="#">Quellen</a>
+      <a class="nav-item nav-link" href="#">Impressum</a>
+    </nav>
+    <!--
+    <form class="float-xs-right">
+      <input type="text" class="form-control" placeholder="Suchen...">
+    </form>
+    -->
+    <div class="ui-widget float-xs-right" id="search-div">
+      <!-- <form class="float-xs-right" id="form"> -->
+      <input type="text" class="form-control" placeholder="Suchen..." id="search">
+      <!-- </form> -->
+    </div>
+  </div>
+</nav>
+<!-- End Top Navigation Bar -->
+
+
+<div class="container-fluid">
+  <div class="row">
+
+    <!-- Navigation Side Bar -->
+    <div class="col-sm-3 col-md-2 sidebar">
+      <ul class="nav nav-sidebar">
+        <li><a href="">Overview</a>
+      </ul>
+      <ul class="nav nav-sidebar" id="sideNav">
         <!--
-        <form class="float-xs-right">
-          <input type="text" class="form-control" placeholder="Suchen...">
-        </form>
+        <li class="active"><a href="#">Overview<span class="sr-only">(current)</span></a>
         -->
-        <div class="ui-widget float-xs-right" id="search-div">
-          <!-- <form class="float-xs-right" id="form"> -->
-            <input type="text" class="form-control" placeholder="Suchen..." id="search">
-          <!-- </form> -->
+        </li>
+      </ul>
+    </div>
+    <!-- End Navigation Side Bar -->
+
+
+    <!-- Main Content -->
+    <div class="row">
+      <div class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 main">
+        <h1 id="header-kapitel"><span id="kapitel-text"></span><span id="kapitel-btn"></span></h1>
+        <h2 id="header-gruppe"></h2>
+        <h3 id="header-klasse"></h3>
+        <!-- Button Test
+        <button type="button" class="btn btn-default btn-sm">
+          <i class="fa fa-level-up" aria-hidden="true"></i>
+        </button>
+        -->
+      </div>
+
+      <div class="row">
+        <div class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 main">
+          <div id="pieChart" class="col-md-6"></div>
+          <div id="some-details" class="col-md-6">
+            <h2 id="icd-number"></h2>
+            <h3 id="icd-description"></h3>
+            <p><span id="patienten-gesamt"></span><br/>
+              <span id="patienten-entlassen"></span><br/>
+              <span id="patienten-gestorben"></span><br/>
+              <span id="patienten-gestorben-prozent"></span></p>
+          </div>
+
+          <svg width="960" height="500" id="stacked-barchart"></svg>
         </div>
       </div>
-    </nav>
-    <!-- End Top Navigation Bar -->
 
-  
-    <div class="container-fluid">
       <div class="row">
-
-        <!-- Navigation Side Bar -->
-        <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li><a href="">Overview</a>
-          </ul>
-          <ul class="nav nav-sidebar" id="sideNav">
-            <!--
-            <li class="active"><a href="#">Overview<span class="sr-only">(current)</span></a>
-            -->
-            </li>
-          </ul>
-        </div>
-        <!-- End Navigation Side Bar -->
-
-
-        <!-- Main Content -->
-        <div class="row">
-          <div class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 main">
-            <h1 id="header-kapitel"><span id="kapitel-text"></span><span id="kapitel-btn"></span></h1>
-            <h2 id="header-gruppe"></h2>
-            <h3 id="header-klasse"></h3>
-            <!-- Button Test
-            <button type="button" class="btn btn-default btn-sm">
-              <i class="fa fa-level-up" aria-hidden="true"></i>
-            </button>
-            -->
-          </div>
-
-          <div class="row">
-            <div class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 main">
-              <div id="pieChart" class="col-md-6"></div>
-              <div id="some-details" class="col-md-4">
-                <h2 id="icd-number"></h2>
-                <h3 id="icd-description"></h3>
-                <p><span id="patienten-gesamt"></span><br/>
-                  <span id="patienten-entlassen"></span><br/>
-                  <span id="patienten-gestorben"></span><br/>
-                  <span id="patienten-gestorben-prozent"></span></p>
-              </div>
-
-              <svg width="960" height="500" id="stacked-barchart"></svg>
-            </div>
-          </div>
-
-        <div class="row">
-          <div class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 main">
+        <div class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 main">
           <h2 id="section-header"></h2>
           <div class="table-responsive">
             <table class="table table-striped tablesorter" id="stats-table">
               <thead id="stats-table-head">
-                <!-- Table head goes here -->
+              <!-- Table head goes here -->
               </thead>
               <tbody id="stats-table-body">
-                <!-- Table body goes here -->
+              <!-- Table body goes here -->
               </tbody>
             </table>
           </div>
-          </div>
         </div>
       </div>
-      </div>
     </div>
+  </div>
+</div>
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <!-- Jquery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js" integrity="sha384-THPy051/pYDQGanwU6poAc/hOdQxjnOEXzbT+OuUAFqNqFjL+4IGLBgCJC3ZOShY" crossorigin="anonymous"></script>
-    <script>window.jQuery || document.write('<script src="js/vendor/jquery.min.js"><\/script>')</script>
-    <!-- JqueryUI -->
-    <script src="jquery-ui-1.12.1/jquery-ui.js"></script>
-    <!-- Tablesorter -->
-    <script type="text/javascript" src="tablesorter/jquery.tablesorter.js"></script>
-    <!-- Tether -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js" integrity="sha384-Plbmg8JY28KFelvJVai01l8WyZzrYWG825m+cZ0eDDS1f7d/js6ikvy1+X+guPIB" crossorigin="anonymous"></script>
-    <!-- Bootstrap -->
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/ie10-viewport-bug-workaround.js"></script>
-    <!-- D3 -->
-    <script src="https://d3js.org/d3.v4.min.js"></script>
-    <script src="js/d3pie.js"></script>
-    <!-- Custom script -->
-    <script src="js/script.js"></script>
-  </body>
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<!-- Jquery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js" integrity="sha384-THPy051/pYDQGanwU6poAc/hOdQxjnOEXzbT+OuUAFqNqFjL+4IGLBgCJC3ZOShY" crossorigin="anonymous"></script>
+<script>window.jQuery || document.write('<script src="js/vendor/jquery.min.js"><\/script>')</script>
+<!-- JqueryUI -->
+<script src="jquery-ui-1.12.1/jquery-ui.js"></script>
+<!-- Tablesorter -->
+<script type="text/javascript" src="tablesorter/jquery.tablesorter.js"></script>
+<!-- Tether -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js" integrity="sha384-Plbmg8JY28KFelvJVai01l8WyZzrYWG825m+cZ0eDDS1f7d/js6ikvy1+X+guPIB" crossorigin="anonymous"></script>
+<!-- Bootstrap -->
+<script src="js/bootstrap.min.js"></script>
+<script src="js/ie10-viewport-bug-workaround.js"></script>
+<!-- D3 -->
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="js/d3pie.js"></script>
+<!-- Custom script -->
+<script src="js/script.js"></script>
+</body>
 </html>
