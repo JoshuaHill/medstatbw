@@ -567,6 +567,17 @@ function searchHandlers() {
 
 }
 
+// Clickhandler for year overview button
+$('#header-klasse').on('click', 'button', function () {
+
+	var icd = document.getElementById('kapitel-text').innerHTML;
+	var description = document.getElementById('header-gruppe').innerHTML;
+
+	$(this).hide();
+
+	loadViewForAllYears(icd, description);
+});
+
 // Clickhandler for dynamically added menu items
 $('#sideNav').on('click', 'li > a', function(event) {
 
@@ -608,6 +619,10 @@ $('#stacked-barchart').on('click', 'g > g.serie > rect', function(event) {
 
 	var jahr = (this).getAttribute('jahr');
 	setSectionHeader(jahr);
+
+	// Add button to switch to year overview
+	addYearOverviewButton();
+
 	var icd = document.getElementById('kapitel-text').innerHTML;
 	if(icd.localeCompare("Alle Krankheiten") == 0) {
 		icd = "INSGESAMT";
@@ -959,6 +974,24 @@ function addPieTooltips(pieData, yearDataGlobal) {
 }
 */
 
+// Function to create year overview button
+function addYearOverviewButton() {
+	var yrBtn = document.createElement('button');
+	yrBtn.setAttribute('type', 'button');
+	yrBtn.setAttribute('class', 'btn btn-info btn-sm');
+	yrBtn.setAttribute('id', 'year-overview-button');
+
+	var yrBtnIcn = document.createElement('i');
+	yrBtnIcn.setAttribute('class', 'fa fa-bar-chart');
+	yrBtnIcn.setAttribute('aria-hidden', 'true');
+
+	var yrBtnTxt = document.createTextNode('Jahresverlauf ');
+
+	yrBtn.appendChild(yrBtnTxt);
+	yrBtn.appendChild(yrBtnIcn);
+	document.getElementById('header-klasse').appendChild(yrBtn);
+
+}
 
 // Function to create uplink button
 function addUplinkButton() {
@@ -1011,6 +1044,9 @@ function loadViewForYear(jahr, icd, description) {
 	// Set new headers
 	setAllHeaders(icd, description, "", jahr);
 
+	// Add Year Overview Button
+	addYearOverviewButton();
+
 	// Add button to Header
 	if(icd.localeCompare("INSGESAMT") !== 0) {
 		addUplinkButton();
@@ -1034,6 +1070,8 @@ function loadViewForAllYears(icd, text) {
 	// set sideNav to true
 	sideNav = true;
 
+
+
 	// Hide tooltip to prevent it from staying after click
 	$(this).tooltip('hide');
 
@@ -1045,17 +1083,24 @@ function loadViewForAllYears(icd, text) {
 	// remove pie chart
 	removePieChart();
 
+	// hide year overview button
+	$('#header-klasse > button').hide();
+
 	// hide details div
 	$('#some-details').hide();
 	$('#pieChart').hide();
 
 	// event.preventDefault();
 
-	// Add Uplink Button
-	addUplinkButton();
-
 	document.getElementById('kapitel-text').innerHTML = icd;
 	document.getElementById('header-gruppe').innerHTML = text;
+
+	if(icd.localeCompare("Alle Krankheiten") == 0) {
+		icd = "INSGESAMT";
+	} else {
+		// Add Uplink Button
+		addUplinkButton();
+	}
 
 	getCredentialsByIcd(2000, icd, 1, true);
 
