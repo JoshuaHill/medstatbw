@@ -478,15 +478,6 @@ function fillTable(head,data) {
 
 	for (let i = 0, len = head.length; i < len; i++) {
 
-		/*
-		if(head[i].localeCompare('Patienten gesamt') == 0) {
-			// Gestorben %
-			var patGesText = document.createTextNode('Patienten gestorben %');
-			var patGesTh = document.createElement('th');
-			patGesTh.appendChild(patGesText);
-			myTrHead.appendChild(patGesTh);
-		}*/
-
 		var text = document.createTextNode(head[i]);
 		var myTh = document.createElement('th');
 		myTh.appendChild(text);
@@ -538,12 +529,7 @@ function fillTable(head,data) {
 	}
 
 	// attach table sorter to table
-	$('#stats-table').tablesorter({
-		textExtraction: function (node) {
-			// remove thousands separator for ordering correctly
-			return $(node).text().replace(/\./g, '');
-		}
-	});
+	addTableSorter();
 }
 
  
@@ -609,6 +595,20 @@ function searchHandlers() {
 	});
 
 }
+
+// Clickhandler for table rows
+$('#stats-table-body').on('click', 'tr', function() {
+	console.log("ROW: " + this);
+});
+
+// MouseOver for table rows
+/*$('#stats-table-body tr').hover(function() {
+	$(this).addClass('hover-row');
+}, function() {
+	$(this).removeClass('hover-row');
+});
+*/
+
 
 // Clickhandler for year overview button
 $('#header-klasse').on('click', 'button', function () {
@@ -1151,6 +1151,26 @@ function loadViewForAllYears(icd, text) {
 
 	getDataByIcd(icd);
 
+}
+
+function addTableSorter() {
+	$('#stats-table').tablesorter({
+		theme: 'blue',
+		textExtraction: function (node) {
+			// remove thousands separator for ordering correctly
+			return $(node).text().replace(/\./g, '');
+		}
+	});
+	// Make table cell focusable
+	// http://css-tricks.com/simple-css-row-column-highlighting/
+	if ( $('.focus-highlight').length ) {
+		$('.focus-highlight').find('td, th')
+			.attr('tabindex', '1')
+			// add touch device support
+			.on('touchstart', function() {
+				$(this).focus();
+			});
+	}
 }
 
 
