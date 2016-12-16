@@ -1183,8 +1183,8 @@ function addTableSorter() {
 	$('#stats-table').tablesorter({
 		theme: 'blue',
 		textExtraction: function (node) {
-			// remove thousands separator for ordering correctly
-			return $(node).text().replace(/\./g, '');
+			// remove thousands separator or decimal for ordering correctly
+			return $(node).text().replace(/\.|,/g, '');
 		}
 	});
 	// Make table cell focusable
