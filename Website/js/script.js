@@ -24,6 +24,7 @@ var overviewKeysJahre = [];
 overviewKeysJahre.push("Jahr");
 overviewKeysJahre.push("Patienten entlassen");
 overviewKeysJahre.push("Patienten gestorben");
+overviewKeysJahre.push("Gestorben %");
 overviewKeysJahre.push("Patienten gesamt");
 
 var overviewKeysJahr = [];
@@ -31,6 +32,7 @@ overviewKeysJahr.push("ICD-10");
 overviewKeysJahr.push("Name");
 overviewKeysJahr.push("Patienten entlassen");
 overviewKeysJahr.push("Patienten gestorben");
+overviewKeysJahr.push("Gestorben %");
 overviewKeysJahr.push("Patienten gesamt");
 
 var distinctColors = [
@@ -475,27 +477,35 @@ function fillTable(head,data) {
 	var myTrHead = document.createElement('tr');
 
 	for (let i = 0, len = head.length; i < len; i++) {
+
 		var text = document.createTextNode(head[i]);
 		var myTh = document.createElement('th');
 		myTh.appendChild(text);
 		myTrHead.appendChild(myTh);
 	}
 
-	// Gestorben % feasible?
-	/*
-	var patGesText = document.createTextNode('Patienten gestorben %');
-	var patGesTh = document.createElement('th');
-	patGesTh.appendChild(patGesText);
-	myTrHead.appendChild(patGesTh);
-
 	document.getElementById('stats-table-head').appendChild(myTrHead);
-	*/
+
 
 	for (let i = 0, len = data.length; i < len; i++) {
 		var myTrBody = document.createElement('tr');
 		var obj = data[i];
 		for (var key in obj) {
 			var value = obj[key];
+
+			var patienten_entlassen;
+			var patienten_gestorben;
+			var gestorbenProzent = null;
+
+			if(key.localeCompare('patienten_entlassen') == 0) {
+				patienten_entlassen = parseFloat(value);
+			} else if(key.localeCompare('patienten_gestorben') == 0) {
+				patienten_gestorben = parseFloat(value);
+				gestorbenProzent = (patienten_gestorben / (patienten_gestorben + patienten_entlassen)) * 100;
+				gestorbenProzent = gestorbenProzent.toFixed(4);
+				gestorbenProzent = germanizeDecimal(gestorbenProzent);
+			}
+
 			if(key.localeCompare('jahr') == 0) {
 				value.toString();
 			} else {
@@ -506,18 +516,20 @@ function fillTable(head,data) {
 			var myTd = document.createElement('td');
 			myTd.appendChild(text);
 			myTrBody.appendChild(myTd);
+
+			if(gestorbenProzent !== null) {
+				var prozent = document.createTextNode(gestorbenProzent);
+				var td = document.createElement('td');
+				td.appendChild(prozent);
+				myTrBody.appendChild(td);
+			}
 		}
 
 		document.getElementById('stats-table-body').appendChild(myTrBody);
 	}
 
 	// attach table sorter to table
-	$('#stats-table').tablesorter({
-		textExtraction: function (node) {
-			// remove thousands separator for ordering correctly
-			return $(node).text().replace(/\./g, '');
-		}
-	});
+	addTableSorter();
 }
 
  
@@ -583,6 +595,43 @@ function searchHandlers() {
 	});
 
 }
+
+// Clickhandler for table rows
+$('#stats-table-body').on('click', 'tr', function() {
+
+	var item = this.firstChild.innerHTML;
+	var item2 = this.firstChild.nextSibling.innerHTML;
+	var jahr = document.getElementById('section-header').innerHTML;
+
+	console.log("ITEM: " + item);
+	console.log("TEXT: " + item2);
+
+
+	if(item.startsWith('ICD')) {
+		loadViewForYear(jahr, item, item2);
+	} else {
+		item2 = document.getElementById('kapitel-text').innerHTML;
+		var description;
+
+		if(item2.localeCompare("Alle Krankheiten") == 0) {
+			item2 = "INSGESAMT";
+			description = "";
+		} else {
+			description = document.getElementById('header-gruppe').innerHTML;
+		}
+
+		loadViewForYear(item, item2, description);
+	}
+
+
+});
+
+// MouseOver for table rows
+/*$('#stats-table-body tr').hover(function() {
+	this.style.cursor = "pointer";
+});*/
+
+
 
 // Clickhandler for year overview button
 $('#header-klasse').on('click', 'button', function () {
@@ -1069,6 +1118,9 @@ function loadViewForYear(jahr, icd, description) {
 	// Add button to Header
 	if(icd.localeCompare("INSGESAMT") !== 0) {
 		addUplinkButton();
+	} else {
+		setKapitel("Alle Krankheiten");
+		setGruppe("");
 	}
 
 	// remove bar chart
@@ -1125,6 +1177,26 @@ function loadViewForAllYears(icd, text) {
 
 	getDataByIcd(icd);
 
+}
+
+function addTableSorter() {
+	$('#stats-table').tablesorter({
+		theme: 'blue',
+		textExtraction: function (node) {
+			// remove thousands separator for ordering correctly
+			return $(node).text().replace(/\./g, '');
+		}
+	});
+	// Make table cell focusable
+	// http://css-tricks.com/simple-css-row-column-highlighting/
+	if ( $('.focus-highlight').length ) {
+		$('.focus-highlight').find('td, th')
+			.attr('tabindex', '1')
+			// add touch device support
+			.on('touchstart', function() {
+				$(this).focus();
+			});
+	}
 }
 
 
