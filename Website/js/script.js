@@ -598,16 +598,39 @@ function searchHandlers() {
 
 // Clickhandler for table rows
 $('#stats-table-body').on('click', 'tr', function() {
-	console.log("ROW: " + this);
+
+	var item = this.firstChild.innerHTML;
+	var item2 = this.firstChild.nextSibling.innerHTML;
+	var jahr = document.getElementById('section-header').innerHTML;
+
+	console.log("ITEM: " + item);
+	console.log("TEXT: " + item2);
+
+
+	if(item.startsWith('ICD')) {
+		loadViewForYear(jahr, item, item2);
+	} else {
+		item2 = document.getElementById('kapitel-text').innerHTML;
+		var description;
+
+		if(item2.localeCompare("Alle Krankheiten") == 0) {
+			item2 = "INSGESAMT";
+			description = "";
+		} else {
+			description = document.getElementById('header-gruppe').innerHTML;
+		}
+
+		loadViewForYear(item, item2, description);
+	}
+
+
 });
 
 // MouseOver for table rows
 /*$('#stats-table-body tr').hover(function() {
-	$(this).addClass('hover-row');
-}, function() {
-	$(this).removeClass('hover-row');
-});
-*/
+	this.style.cursor = "pointer";
+});*/
+
 
 
 // Clickhandler for year overview button
@@ -1095,6 +1118,9 @@ function loadViewForYear(jahr, icd, description) {
 	// Add button to Header
 	if(icd.localeCompare("INSGESAMT") !== 0) {
 		addUplinkButton();
+	} else {
+		setKapitel("Alle Krankheiten");
+		setGruppe("");
 	}
 
 	// remove bar chart
