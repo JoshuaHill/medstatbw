@@ -20,6 +20,7 @@ var years = [
 
 var searchArray  = years;
 
+// Predefined Table Headers for years view
 var overviewKeysJahre = [];
 overviewKeysJahre.push("Jahr");
 overviewKeysJahre.push("Patienten entlassen");
@@ -27,6 +28,7 @@ overviewKeysJahre.push("Patienten gestorben");
 overviewKeysJahre.push("Gestorben %");
 overviewKeysJahre.push("Patienten gesamt");
 
+// Predefined Table Headers for year view
 var overviewKeysJahr = [];
 overviewKeysJahr.push("ICD-10");
 overviewKeysJahr.push("Name");
@@ -35,6 +37,7 @@ overviewKeysJahr.push("Patienten gestorben");
 overviewKeysJahr.push("Gestorben %");
 overviewKeysJahr.push("Patienten gesamt");
 
+// Predefined Colors for PieChart
 var distinctColors = [
 	"#1CE6FF", "#FF4A46", "#008941", "#006FA6", "#A30059",
 	"#FFDBE5", "#7A4900", "#0000A6", "#63FFAC", "#B79762", "#004D43", "#8FB0FF", "#997D87",
@@ -54,12 +57,16 @@ var distinctColors = [
 
 
 
-/**
+/*****************
 *
 * DATA FUNCTIONS
 *
-**/
+******************/
 
+/**
+ * This function queries the fuseki dataset to obtain
+ * all distinct ICD-Codes and descriptions
+ */
 function getAllCodesAndDescriptions() {
 
 	// security measure
@@ -83,39 +90,44 @@ function getAllCodesAndDescriptions() {
 					}
 				});
 
+				// push data into searchArray
 				searchArray.push(di);
 				searchArray.push(dt);
-
 				allIcdCodes.push({icd_code: di, icd_text: dt});
 			})
 		});
 
+		// load autocomplete for search function
 		searchHandlers();
 
 	});
 
 }
 
+/**
+ * This function queries the fuseki dataset to obtain
+ * credentials of the overlying ICD/Illness
+ */
 function setIcdCode(kapitel, gruppe, type, years) {
 
 	var credz;
 
 	var queryString;
 
+	// If type is "Klasse" get credentials of overlying "Gruppe"
 	if(type.localeCompare("Klasse") == 0) {
-		console.log("QUERY KLASSE");
 		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+distinct+%3Fdi+%3Fdt+%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%222000%22+.%0A++%3Fx+med%3Aicd_kapitel+"+ kapitel + "+.%0A++%3Fx+med%3Aicd_gruppe+" + gruppe + "+.%0A++%3Fx+med%3Aicd_typ+%22Gruppe%22+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdi+.%0A++%3Fx+med%3Adiagnose_text+%3Fdt+.%0A%7D";
+	// If type is "Gruppe" get credentials of overlying "Kapitel"
 	} else if(type.localeCompare("Gruppe") == 0) {
 		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+distinct+%3Fdi+%3Fdt+%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%222000%22+.%0A++%3Fx+med%3Aicd_kapitel+" + kapitel + "+.%0A++%3Fx+med%3Aicd_typ+%22Kapitel%22+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdi+.%0A++%3Fx+med%3Adiagnose_text+%3Fdt+.%0A%7D";
+	// Else get credentials for "Alle Krankheiten"
 	} else {
-		console.log("E L S E !!!");
 		setMainHeaders("Alle Krankheiten", "", "");
 		document.getElementById('kapitel-btn').innerHTML = "";
 		if(years == false) {
 			getCredentialsByIcd(2000, "INSGESAMT", 1, false);
 			addYearOverviewButton();
 		} else {
-			console.log("H A L L O");
 			removeBarChart(960, 500);
 			getCredentialsByIcd(2000, "INSGESAMT", 1, true);
 			getDataByIcd("INSGESAMT");
@@ -123,8 +135,6 @@ function setIcdCode(kapitel, gruppe, type, years) {
 
 		return;
 	}
-
-	console.log(queryString);
 
 	$.getJSON(queryString, function (data) {
 		$.each(data.results, function (key, val) {
@@ -144,20 +154,17 @@ function setIcdCode(kapitel, gruppe, type, years) {
 			})
 		});
 
-		console.log("C R E D Z : " + credz.icd_code + ", " + credz.icd_text);
-
+		// load headers
 		setMainHeaders(credz.icd_code, credz.icd_text, "");
 
+		// Add Overview Button
 		if(years == false) {
 			addYearOverviewButton();
 		}
 
-
 		getCredentialsByIcd(2000, credz.icd_code, 1, false);
 
 		if(years == true) {
-
-			console.log("YEARS == TRUE");
 			removeBarChart(960, 500);
 			getDataByIcd(credz.icd_code);
 		}
@@ -166,11 +173,13 @@ function setIcdCode(kapitel, gruppe, type, years) {
 
 }
 
+/**
+ * This function queries the fuseki dataset to obtain
+ * credentials of an Illness by it's ICD-Code
+ */
 function getCredentialsByIcd(jahr, icd_code, followup, years) {
 
 	var credentials;
-
-	console.log("INPUT: " + jahr + ", " + icd_code);
 
 	var queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Ftyp+%3Fkap+%3Fgru%0A%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Adiagnose_icd+%22" + icd_code +"%22+.%0A++%3Fx+med%3Aicd_typ+%3Ftyp+.%0A++%3Fx+med%3Aicd_kapitel+%3Fkap+.%0A++%3Fx+med%3Aicd_gruppe+%3Fgru+.%0A%7D";
 
@@ -198,8 +207,6 @@ function getCredentialsByIcd(jahr, icd_code, followup, years) {
 			})
 		});
 
-		console.log("CREDS EARLY: " + credentials.typ + ", " + credentials.kapitel + ", " + credentials.gruppe);
-
 		// Get Data for Year View
 		if(followup == 0) {
 			getDataByYear(credentials.kapitel, credentials.gruppe, credentials.typ, credentials.jahr, credentials.icd_code);
@@ -219,32 +226,23 @@ function getCredentialsByIcd(jahr, icd_code, followup, years) {
 	
 }
 
+/**
+ * This function queries the fuseki dataset to obtain
+ * data for the selected "Kapitel", "Gruppe" or "Klasse"
+ * by Year.
+ */
 function getDataByYear(kapitel, gruppe, typ, jahr, icd) {
 
-	console.log("getting data...");
-	console.log("Type: " + typ);
 	var yearData = [];
 	var queryString;
 
-	/*
-	if (levelUp == true) {
-		if(typ.localeCompare("Kapitel") == 0) {
-			typ = "Insgesamt";
-		} else if (typ.localeCompare("Gruppe") == 0 ) {
-			typ = "Kapitel";
-		} else {
-			typ = "Gruppe";
-		}
-	}
-	*/
-
-	// Alle Kapitel
+	// All "Kapitel"
 	if(typ.localeCompare("Insgesamt") == 0) {
 		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fkap+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Aicd_typ+%22Kapitel%22+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
-	// Alle Gruppen zu Kapitel
+	// All "Gruppen" of current "Kapitel"
 	} else if(typ.localeCompare("Kapitel") == 0) {
 		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fgru+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Aicd_typ+%22Gruppe%22+.%0A++%3Fx+med%3Aicd_kapitel+" + kapitel + "+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
-	// Alle Klassen zu Gruppe
+	// All "Klassen" of current "Gruppe"
 	} else if(typ.localeCompare("Gruppe") == 0){
 		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fkla+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Aicd_typ+%22Klasse%22+.%0A++%3Fx+med%3Aicd_kapitel+" + kapitel + "+.%0A++%3Fx+med%3Aicd_gruppe+" + gruppe + "+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
 	// Nur die Klasse selbst (Query überhaupt notwendig?!?!)
@@ -283,30 +281,29 @@ function getDataByYear(kapitel, gruppe, typ, jahr, icd) {
 						pg = pgval;
 					}
 				});
+
+				// Iteratively push data into yearData Array
 				yearData.push({icd_code: dia_icd, icd_text: dia_text, patienten_entlassen: pe, patienten_gestorben: pt, patienten_gesamt: pg});
 			})
 		});
 
-		/*
-		for(let i = 0, len = yearData.length; i < len; i++) {
-			console.log("Line " + i);
-			console.log(yearData[i]);
-		}
-		*/
-
+		// Create Table from Data
 		pieChartDetailsGlobal = yearData;
 		fillTable(overviewKeysJahr, yearData);
 
+		// Create Pie Chart from Data
 		var pieData = createDataForPieChart(distinctColors, yearData);
 		createPieChart(pieData, yearData);
 	});
-	// createStackedBarChart(overviewDataSVG);
 
 }
 
 
 
-// Get Data for Default Overview
+/**
+ * This function queries the fuseki dataset to obtain
+ * data for the Overview by ICD-Code.
+ */
 function getDataByIcd(icd) {
 
 	overviewData = [];
@@ -341,14 +338,23 @@ function getDataByIcd(icd) {
 				overviewData.push({jahr: jahr, patienten_entlassen: pe, patienten_gestorben: pt, patienten_gesamt: pg});
 			})
 		});
-		
+
 		fillTable(overviewKeysJahre, overviewData);
 		createStackedBarChart(overviewDataSVG);		
 		
 	});
 }
 
-// Get Data for Sidebar menu
+/**
+ * This function queries the fuseki dataset to obtain
+ * data for the lefthand side menu by icd code
+ *
+ * @param typ
+ * @param icd_kapitel
+ * @param icd_gruppe
+ * @param icd_code
+ * @param levelUp
+ */
 function getDataForMenu(typ, icd_kapitel, icd_gruppe, icd_code, levelUp) {
 
 	var menuData = [];
@@ -373,10 +379,6 @@ function getDataForMenu(typ, icd_kapitel, icd_gruppe, icd_code, levelUp) {
 		queryString = "http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+distinct+%3Fdi+%3Fdt+%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%222000%22+.%0A++%3Fx+med%3Adiagnose_icd+%22" + icd_code +"%22+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdi+.%0A++%3Fx+med%3Adiagnose_text+%3Fdt+.%0A%7D";
 	}
 
-
-
-	// console.log(queryString);
-
 	$.getJSON(queryString, function (data) {
 		$.each(data.results, function (key, val) {
 			$.each(val, function (m, n) {
@@ -399,7 +401,16 @@ function getDataForMenu(typ, icd_kapitel, icd_gruppe, icd_code, levelUp) {
 	});
 }
 
-//
+/**
+ * This function queries the fuseki dataset to obtain
+ * the ICD-Code of the current Illnesses' parent
+ *
+ * @param kapitel
+ * @param gruppe
+ * @param typ
+ * @param icd_code
+ * @param years
+ */
 function getHigherLevelIcd(kapitel, gruppe, typ, jahr, icd_code, years) {
 
 	setIcdCode(kapitel, gruppe, typ, years);
@@ -418,19 +429,7 @@ function getHigherLevelIcd(kapitel, gruppe, typ, jahr, icd_code, years) {
 		getDataByYear(kapitel, gruppe, typ, jahr);
 		getDataForMenu(typ, kapitel, gruppe, icd_code, true);
 
-		console.log("T Y P  :   " + typ);
-
 	}
-
-	/*
-	if(credentials.type.localeCompare("Kapitel") == 0) {
-		getCredentialsByIcd(2000, "Insgesamt", 1);
-		getDataByIcd("Insgesamt")
-		return;
-	} else {
-		getDataForMenu(credentials.typ, credentials.kapitel, credentials.gruppe, credentials.icd_code, true);
-	}
-	*/
 
 }
 
@@ -463,12 +462,18 @@ function setMenu(menuData) {
 
 
 
-/**
+/*******************************
 *
 * TABLE FUNCTIONS
 *
-**/
+********************************/
 
+/**
+ *
+ *
+ * @param head
+ * @param data
+ */
 function fillTable(head,data) {
 
 	document.getElementById('stats-table-head').innerHTML = "";
@@ -535,13 +540,18 @@ function fillTable(head,data) {
  
 
 
-/**
+/***************************************
 *
 * EVENT HANDLERS
 *
-**/
+****************************************/
 
+/**
+ * Function to load the necessary event handlers
+ * for the search function
+ */
 function searchHandlers() {
+	// Jquery autocomplete function
 	$('#search').autocomplete({
 		source: function(request, response) {
 			var results = $.ui.autocomplete.filter(searchArray, request.term);
@@ -550,7 +560,7 @@ function searchHandlers() {
 		}
 	});
 
-
+	// Jquery keyboard handler on Enter
 	$('#search').keypress(function (e) {
 		if(e.which == 13) {
 			var inputValue = $('#search').val();
@@ -593,10 +603,12 @@ function searchHandlers() {
 			}
 		}
 	});
-
 }
 
-// Clickhandler for table rows
+
+/**
+ * Jquery Clickhandler for table rows
+ */
 $('#stats-table-body').on('click', 'tr', function() {
 
 	var item = this.firstChild.innerHTML;
@@ -623,17 +635,12 @@ $('#stats-table-body').on('click', 'tr', function() {
 		loadViewForYear(item, item2, description);
 	}
 
-
 });
 
-// MouseOver for table rows
-/*$('#stats-table-body tr').hover(function() {
-	this.style.cursor = "pointer";
-});*/
 
-
-
-// Clickhandler for year overview button
+/**
+ * Jquery Clickhandler for year overview button
+ */
 $('#header-klasse').on('click', 'button', function () {
 
 	var icd = document.getElementById('kapitel-text').innerHTML;
@@ -644,11 +651,13 @@ $('#header-klasse').on('click', 'button', function () {
 	loadViewForAllYears(icd, description);
 });
 
-// Clickhandler for dynamically added menu items
+
+/**
+ * Jquery Clickhandler for dynamically added menu items
+ */
 $('#sideNav').on('click', 'li > a', function(event) {
 
-	// set sideNav to true
-	// sideNav = true;
+	event.preventDefault();
 
 	// Hide tooltip to prevent it from staying after click
 	$(this).tooltip('hide');
@@ -659,16 +668,23 @@ $('#sideNav').on('click', 'li > a', function(event) {
 
 	loadViewForAllYears(link, text);
 
-	// event.preventDefault();
-
 });
 
-// Tooltips for dynamically added menu items
+
+/**
+ * Jquery enable Tooltips for dynamically added menu items
+ */
 $('#sideNav').on('mouseover', 'li', function(event) {
+
+	event.preventDefault();
+
 	$('[data-toggle="tooltip"]').tooltip();
 });
 
-// Clickhandler for bars of stacked bar chart
+
+/**
+ * Jquery Clickhandler for bars of stacked bar chart
+ */
 $('#stacked-barchart').on('click', 'g > g.serie > rect', function(event) {
 
 	// Set sideNav to false
@@ -702,21 +718,24 @@ $('#stacked-barchart').on('click', 'g > g.serie > rect', function(event) {
 
 });
 
-// Tooltips for bars of stacked bar charts
+
+/**
+ * Jquery mouseover handler to enable tooltips for
+ * bars of barchart
+ */
 $('#stacked-barchart').on('mouseover', 'g > g.serie > rect', function(event) {
 	// Change Mousepointer
 	this.style.cursor = "pointer";
 	$(this).tooltip({container:'body', html: true});
 });
 
-// Show Details for pieChart slices
+/**
+ * Jquery mouseover handler to enable tooltips for
+ * slices of pie chart
+ */
 $('#pieChart').on('mouseover', 'svg > g:nth-of-type(2) > g > path', function (event) {
-	// Change Mousepointer
-	/*
-	if(uplink.length < 3) {
-		this.style.cursor = "pointer";
-	}
-	*/
+
+	event.preventDefault();
 
 	for(let i = 0, len = pieDataGlobal.length; i < len; i++) {
 		if(this.getAttribute('fill').localeCompare(pieDataGlobal[i].color) == 0) {
@@ -729,10 +748,11 @@ $('#pieChart').on('mouseover', 'svg > g:nth-of-type(2) > g > path', function (ev
 		}
 	}
 
-	// $(this).tooltip({container:'body', html: true});
 });
 
-// Clickhandler for pieChart slices
+/**
+ * Jquery Clickhandler for pieChart slices
+ */
 $('#pieChart').on('click', 'svg > g:nth-of-type(2) > g > path', function (event){
 
 	event.preventDefault();
@@ -745,14 +765,16 @@ $('#pieChart').on('click', 'svg > g:nth-of-type(2) > g > path', function (event)
 
 });
 
-// Level-Up Clickhandler
+
+/**
+ * Jquery Clickhandler for Level-Up
+ */
 $('#kapitel-btn').on('click', 'button', function(event) {
 
 	event.preventDefault();
 
 	var icd = document.getElementById('kapitel-text').innerHTML;
 	var jahr = document.getElementById('section-header').innerHTML;
-	var description;
 
 	// Wenn man von der PieChart Ansicht kommt
 	if (sideNav == false) {
@@ -773,15 +795,20 @@ $('#kapitel-btn').on('click', 'button', function(event) {
 
 
 
-/**
+/*************************
 *
 * d3 functions
 *
-**/
+**************************/
 
-// create a stacked bar chart to display data over a time period
+/**
+ * D3 Function to create stacked bar chart from Json input
+ *
+ * @param jsonObj: Input Json Data to create Barchart
+ */
 function createStackedBarChart(jsonObj) {
 
+	// create new svg
 	var svg = d3.select("svg"),
     margin = {top: 20, right: 20, bottom: 30, left: 40},
     width = +svg.attr("width") - margin.left - margin.right,
@@ -800,10 +827,8 @@ function createStackedBarChart(jsonObj) {
 	    .range(["#98abc5", "#8a89a6"]);
 
 	var stack = d3.stack();
-
-
 	var data = jsonObj;
-	console.log(data[0].jahr);
+
 	z.domain(d3.keys(data[0]).filter(function(key) { return key !== "jahr"; }));
 
 	data.forEach(function(d) {
@@ -811,8 +836,6 @@ function createStackedBarChart(jsonObj) {
 	    d.jahre = z.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]}; });
 	    d.total = d.jahre[d.jahre.length - 1].y1;
   	});
-
-  	// data.sort(function(a, b) { return b.total - a.total; });
 
 	x.domain(data.map(function(d) { return d.jahr; }));
 	y.domain([0, d3.max(data, function(d) { return d.total; })]);
@@ -885,7 +908,12 @@ function createStackedBarChart(jsonObj) {
 }
 
 
-// create a labeled pie chart bar chart
+/**
+ * Function to create Pie Charts, utilizing d3pie custom library for D3
+ *
+ * @param pieData
+ * @param yearData
+ */
 function createPieChart(pieData, yearData) {
 
 	var pie = new d3pie("pieChart", {
@@ -959,35 +987,65 @@ function createPieChart(pieData, yearData) {
 	"callbacks": {}
 	});
 
-	// addPieTooltips(pieData, yearData);
-
 }
 
 
 
 
-/**
+/***************************************
 *
 * HELPER FUNCTIONS
 *
-**/
+****************************************/
 
+/**
+ * Function to set "Kapitel" header
+ *
+ * @param kapitel
+ */
 function setKapitel(kapitel) {
 	document.getElementById('kapitel-text').innerHTML = kapitel;
 }
 
+
+/**
+ * Function to set "Gruppe" header
+ *
+ * @param gruppe
+ */
 function setGruppe(gruppe) {
 	document.getElementById('header-gruppe').innerHTML = gruppe;
 }
 
+
+/**
+ * Function to set "Klasse" header
+ *
+ * @param klasse
+ */
 function setKlasse(klasse) {
 	document.getElementById('header-klasse').innerHTML = klasse;
 }
 
+
+/**
+ * Function to set section header (above table)
+ *
+ * @param header
+ */
 function setSectionHeader(header) {
 	document.getElementById('section-header').innerHTML = header;
 }
 
+
+/**
+ * Function to set all headers
+ *
+ * @param kapitel
+ * @param gruppe
+ * @param klasse
+ * @param header
+ */
 function setAllHeaders(kapitel, gruppe, klasse, header) {
 	setKapitel(kapitel);
 	setGruppe(gruppe);
@@ -995,13 +1053,27 @@ function setAllHeaders(kapitel, gruppe, klasse, header) {
 	setSectionHeader(header);
 }
 
+
+/**
+ * Function to set headers for "Kapitel", "Gruppe" and "Klasse"
+ *
+ * @param kapitel
+ * @param gruppe
+ * @param klasse
+ */
 function setMainHeaders(kapitel, gruppe, klasse) {
 	setKapitel(kapitel);
 	setGruppe(gruppe);
 	setKlasse(klasse);
 }
 
-// Function to add thousands seperators to large numbers
+
+/**
+ * Function to add thousands seperators to large numbers
+ *
+ * @param n
+ * @returns {string|*}
+ */
 function humanizeNumber(n) {
   n = n.toString();
   while (true) {
@@ -1012,14 +1084,27 @@ function humanizeNumber(n) {
   return n;
 }
 
-// Function to replace . with ,
+
+/**
+ * Function to replace . with ,
+ *
+ * @param n
+ * @returns {string}
+ */
 function germanizeDecimal(n) {
 	n = n.toString();
 	var n2 = n.replace('.', ',');
 	return n2;
 }
 
-// Function to generate the necessary Data to create pie charts
+
+/**
+ * Function to generate the necessary Data to create pie charts
+ *
+ * @param colorData
+ * @param dataObj
+ * @returns {Array}
+ */
 function createDataForPieChart(colorData, dataObj ){
 	var pieData = [];
 
@@ -1032,17 +1117,10 @@ function createDataForPieChart(colorData, dataObj ){
 	return pieData;
 }
 
-// Function to add Tooltip data to pie chart
-/*
-function addPieTooltips(pieData, yearDataGlobal) {
-	for(let i = 0, len = pieData.length; i < len; i++) {
-		var path = document.getElementById('p0_segment' + i);
-		path.setAttribute('')
-	}
-}
-*/
 
-// Function to create year overview button
+/**
+ * Function to create year overview button
+ */
 function addYearOverviewButton() {
 	var yrBtn = document.createElement('button');
 	yrBtn.setAttribute('type', 'button');
@@ -1061,15 +1139,13 @@ function addYearOverviewButton() {
 
 }
 
-// Function to create uplink button
+/**
+ * Function to create uplink button
+ */
 function addUplinkButton() {
 	var upBtn = document.createElement('button');
 	upBtn.setAttribute('type', 'button');
 	upBtn.setAttribute('class', 'btn btn-default btn-sm');
-	// upBtn.setAttribute('description', btnDescription);
-	// upBtn.setAttribute('data-toggle', 'tooltip');
-	// upBtn.setAttribute('data-placement', 'right');
-	// upBtn.setAttribute('title', btnLink);
 
 	var upBtnIcn = document.createElement('i');
 	upBtnIcn.setAttribute('class', 'fa fa-level-up');
@@ -1081,7 +1157,9 @@ function addUplinkButton() {
 	document.getElementById('kapitel-btn').appendChild(upBtn);
 }
 
-
+/**
+ * Function to remove pie chart components from DOM
+ */
 function removePieChart() {
 	//remove pie chart
 	document.getElementById("pieChart").innerHTML = "";
@@ -1094,12 +1172,23 @@ function removePieChart() {
 	document.getElementById('patienten-gestorben').innerHTML = "";
 }
 
+/**
+ * Function to remove barchart components from DOM
+ */
 function removeBarChart(width, height) {
 	document.getElementById("stacked-barchart").innerHTML = "";
 	document.getElementById("stacked-barchart").setAttribute('width', width);
 	document.getElementById("stacked-barchart").setAttribute('height', height);
 }
 
+
+/**
+ * Function to load View for a given year and ICD-Code
+ *
+ * @param jahr
+ * @param icd
+ * @param description
+ */
 function loadViewForYear(jahr, icd, description) {
 
 	// Set sideNav to false
@@ -1136,6 +1225,13 @@ function loadViewForYear(jahr, icd, description) {
 	getCredentialsByIcd(jahr, icd, 1);
 }
 
+
+/**
+ * Function to load view for all years for give ICD-Code
+ *
+ * @param icd
+ * @param text
+ */
 function loadViewForAllYears(icd, text) {
 
 	// set sideNav to true
@@ -1179,6 +1275,11 @@ function loadViewForAllYears(icd, text) {
 
 }
 
+
+/**
+ * Function to add Table Sorter
+ * utilizing tablesorter library and Jquery
+ */
 function addTableSorter() {
 	$('#stats-table').tablesorter({
 		theme: 'blue',
@@ -1204,21 +1305,30 @@ function addTableSorter() {
 
 
 
-/**
+/*****************************************
 *
 * INIT FUNCTION
 *
-**/
+******************************************/
 
-// Startup 
+/**
+ * This Jquery function will execute on startup,
+ * when the page is initially loaded in the browser.
+ */
 $(document).ready(function() {
-	// console.log(distinctColors);
-	// getDataForMenu("INSGESAMT", 0, 0);
+	// get all distinct ICD-Codes and Descriptions
 	getAllCodesAndDescriptions();
+
 	getCredentialsByIcd(2000, "INSGESAMT", 1, true);
+
+	// Hide year view elements
 	$('#some-details').hide();
 	$('#pieChart').hide();
+
+	// get year overview data for all illnesses
 	getDataByIcd("INSGESAMT");
+
+	// set appropriate headers
 	setAllHeaders("Alle Krankheiten", "", "", "2000 - 2014");
 });
 
