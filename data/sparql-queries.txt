@@ -1,0 +1,166 @@
+PREFIX med: <http://purl.org/net/medstats>
+
+SELECT ?di ?dt ?pe ?pt ?kap
+WHERE {
+  ?x med:jahr "2000" .
+  ?x med:diagnose_icd ?di .
+  ?x med:diagnose_text ?dt .
+  ?x med:patienten_entlassen ?pe .
+  ?x med:patienten_gestorben ?pt .
+  ?x med:icd_typ "Kapitel" .
+  ?x med:icd_kapitel ?kap .
+}
+LIMIT 25
+
+
+
+PREFIX med: <http://purl.org/net/medstats>
+
+SELECT distinct ?di ?dt ?pe ?pt ?jahr
+WHERE {
+  ?x med:jahr ?jahr .
+  ?x med:diagnose_icd "ICD10-A20" .
+  ?x med:diagnose_text ?dt .
+  ?x med:patienten_entlassen ?pe .
+  ?x med:patienten_gestorben ?pt .
+}
+LIMIT 25
+
+
+
+// Alle Kapitel ICD + Text
+PREFIX med: <http://purl.org/net/medstats>
+
+SELECT distinct ?di ?dt 
+WHERE {
+  ?x med:jahr "2000" .
+  ?x med:diagnose_icd ?di .
+  ?x med:diagnose_text ?dt .
+  ?x med:icd_typ "Kapitel" .
+}
+
+http://localhost:3030/medstats_new/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E+SELECT+distinct+%3Fdi+%3Fdt+WHERE+%7B%3Fx+med%3Ajahr+%222000%22+.+%3Fx+med%3Adiagnose_icd+%3Fdi+.+%3Fx+med%3Adiagnose_text+%3Fdt+.+%3Fx+med%3Aicd_typ+%22Kapitel%22+.%7D
+
+
+
+// Alle Jahre, alle Krankheiten
+PREFIX med: <http://purl.org/net/medstats>
+
+SELECT ?jahr ?pe ?pt ?pg
+WHERE {
+  ?x med:jahr ?jahr .
+  ?x med:diagnose_icd "INSGESAMT" .
+  ?x med:patienten_entlassen ?pe .
+  ?x med:patienten_gestorben ?pt .
+  ?x med:patienten_gesamt ?pg
+}
+
+http://localhost:3030/medstats_new/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fjahr+%3Fpe+%3Fpt+%3Fpg%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%3Fjahr+.%0A++%3Fx+med%3Adiagnose_icd+%22INSGESAMT%22+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg%0A%7D
+
+
+
+
+
+// Vorquery um Typ, Kap und Gru von ICD zu bekommen
+PREFIX med: <http://purl.org/net/medstats>
+
+SELECT ?typ ?kap ?gru
+
+WHERE {
+  ?x med:jahr "2000" .
+  ?x med:diagnose_icd "ICD10-A00" .
+  ?x med:icd_typ ?typ .
+  ?x med:icd_kapitel ?kap .
+  ?x med:icd_gruppe ?gru .
+}
+
+// JS QUERY
+"http://localhost:3030/medstats_new/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Ftyp+%3Fkap+%3Fgru%0A%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Adiagnose_icd+%22" + icd_code +"%22+.%0A++%3Fx+med%3Aicd_typ+%3Ftyp+.%0A++%3Fx+med%3Aicd_kapitel+%3Fkap+.%0A++%3Fx+med%3Aicd_gruppe+%3Fgru+.%0A%7D"
+
+//GENERIC
+http://localhost:3030/medstats_new/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Ftyp+%3Fkap+%3Fgru%0A%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%222014%22+.%0A++%3Fx+med%3Adiagnose_icd+%22INSGESAMT%22+.%0A++%3Fx+med%3Aicd_typ+%3Ftyp+.%0A++%3Fx+med%3Aicd_kapitel+%3Fkap+.%0A++%3Fx+med%3Aicd_gruppe+%3Fgru+.%0A%7D
+
+
+
+// Alle Kapitel für Jahr 2000
+PREFIX med: <http://purl.org/net/medstats>
+
+SELECT ?kap ?pe ?pt ?pg ?dia_icd ?dia_text
+WHERE {
+  ?x med:jahr "2000" .
+  ?x med:icd_typ "Kapitel" .
+  ?x med:diagnose_icd ?dia_icd .
+  ?x med:diagnose_text ?dia_text .
+  ?x med:patienten_entlassen ?pe .
+  ?x med:patienten_gestorben ?pt .
+  ?x med:patienten_gesamt ?pg .
+}
+
+"http://localhost:3030/dataset.html?tab=upload&ds=/medstats_v2#query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fkap+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Aicd_typ+%22Kapitel%22+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
+
+  => pe, pt, pg, dia_icd, dia_text
+
+
+// Alle Gruppen für Jahr 2000 und Kapitel 1
+
+  -> ?kap wird durch ?gru ersetzt
+  -> kapitel Nummer muss zusätzlich angegeben werden
+
+PREFIX med: <http://purl.org/net/medstats>
+
+SELECT ?gru ?pe ?pt ?pg ?dia_icd ?dia_text
+WHERE {
+  ?x med:jahr "2000" .
+  ?x med:icd_typ "Gruppe" .
+  ?x med:icd_kapitel 1 .
+  ?x med:diagnose_icd ?dia_icd .
+  ?x med:diagnose_text ?dia_text .
+  ?x med:patienten_entlassen ?pe .
+  ?x med:patienten_gestorben ?pt .
+  ?x med:patienten_gesamt ?pg .
+}
+
+"http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fgru+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Aicd_typ+%22Gruppe%22+.%0A++%3Fx+med%3Aicd_kapitel+" + kapitel + "+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D";
+
+  => gru, pe, pt, pg, dia_icd, dia_text
+
+
+
+// Alle Klassen für Jahr 2000 und Kapitel 1, Gruppe1
+
+  -> ?gru wird durch klasse ersetzt
+  -> Gruppen Nummer muss zusätzlich angegeben werden
+
+PREFIX med: <http://purl.org/net/medstats>
+
+SELECT ?kla ?pe ?pt ?pg ?dia_icd ?dia_text
+WHERE {
+  ?x med:jahr "2000" .
+  ?x med:icd_typ "Klasse" .
+  ?x med:icd_kapitel 1 .
+  ?x med:icd_gruppe 1 .
+  ?x med:diagnose_icd ?dia_icd .
+  ?x med:diagnose_text ?dia_text .
+  ?x med:patienten_entlassen ?pe .
+  ?x med:patienten_gestorben ?pt .
+  ?x med:patienten_gesamt ?pg .
+}
+
+  => kla, pe, pt, pg, dia_icd, dia_text
+
+"http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fkla+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Aicd_typ+%22Klasse%22+.%0A++%3Fx+med%3Aicd_kapitel+" + kapitel + "+.%0A++%3Fx+med%3Aicd_gruppe+" + gruppe + "+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A%7D"
+
+// Details zu einer Krankheit für gegebenes Jahr
+"http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fpe+%3Fpt+%3Fpg+%3Fdt%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Adiagnose_icd+%22" + icd + "%22+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A++%3Fx+med%3Adiagnose_text+%3Fdt%0A%7D"
+
+
+
+"http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+%3Fpe+%3Fpt+%3Fpg+%3Fdia_icd+%3Fdia_text%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%22" + jahr + "%22+.%0A++%3Fx+med%3Adiagnose_icd+%22" + icd + "%22+.%0A++%3Fx+med%3Apatienten_entlassen+%3Fpe+.%0A++%3Fx+med%3Apatienten_gestorben+%3Fpt+.%0A++%3Fx+med%3Apatienten_gesamt+%3Fpg+.%0A++%3Fx+med%3Adiagnose_text+%3Fdia_text+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdia_icd%0A%7D"
+
+
+
+MENU GRUPPEN
+"http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+distinct+%3Fdi+%3Fdt+%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%222000%22+.%0A++%3Fx+med%3Aicd_kapitel+" + icd_kapitel + "+.%0A++%3Fx+med%3Aicd_typ+%22"+ typ +"%22+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdi+.%0A++%3Fx+med%3Adiagnose_text+%3Fdt+.%0A%7D"
+
+MENUE KLASSEN
+"http://localhost:3030/medstats_v2/?query=PREFIX+med%3A+%3Chttp%3A%2F%2Fpurl.org%2Fnet%2Fmedstats%3E%0A%0ASELECT+distinct+%3Fdi+%3Fdt+%0AWHERE+%7B%0A++%3Fx+med%3Ajahr+%222000%22+.%0A++%3Fx+med%3Aicd_kapitel+"+ icd_kapitel +"+.%0A++%3Fx+med%3Aicd_gruppe+"+ icd_gruppe + "+.%0A++%3Fx+med%3Aicd_typ+%22"+ typ +"%22+.%0A++%3Fx+med%3Adiagnose_icd+%3Fdi+.%0A++%3Fx+med%3Adiagnose_text+%3Fdt+.%0A%7D"

@@ -793,6 +793,54 @@ $('#kapitel-btn').on('click', 'button', function(event) {
 });
 
 
+/**
+ * Clickhandler for Imprint
+ */
+$('#imprint').click(function(){
+	
+	$('#main-container').hide();
+
+	$('#search-div').hide();
+
+	$('#static-content').load('imprint.html');
+
+	$('#static-content').show();
+
+});
+
+
+/**
+ * Clickhandler for Sources
+ */
+$('#sources').click(function () {
+
+	$('#main-container').hide();
+
+	$('#search-div').hide();
+
+	$('#static-content').load('sources.html');
+
+	$('#static-content').show();
+
+});
+
+
+/**
+ * Clickhandler for Home
+ */
+$('#home').click(function () {
+
+	$('#static-content').hide();
+
+	$('#main-container').show();
+
+	$('#search-div').show();
+
+});
+
+
+
+
 
 
 /*************************
